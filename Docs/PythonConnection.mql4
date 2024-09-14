@@ -1,0 +1,50 @@
+#include <Winsock2.h>
+#import "Ws2_32.dll"
+int WSAStartup(int wVersionRequired, int &lpWSAData[]);
+int WSACleanup();
+int socket(int af, int type, int protocol);
+int connect(int s, const int &name, int namelen);
+int send(int s, const uchar &buf[], int len, int flags);
+int recv(int s, uchar &buf[], int len, int flags);
+int closesocket(int s);
+#import
+
+int OnInit()
+{
+    // Initialize Winsock
+    int wsaData[512];
+    WSAStartup(0x0202, wsaData);
+
+    // Create a socket
+    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    // Define server address
+    sockaddr_in server;
+    server.sin_family = AF_INET;
+    server.sin_port = htons(5555);
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    // Connect to the server
+    connect(sock, server, sizeof(server));
+
+    // Prepare data to send (example data)
+    double inputData[] = { /* your input data */ };
+    uchar buffer[sizeof(inputData)];
+    memcpy(buffer, inputData, sizeof(inputData));
+    send(sock, buffer, sizeof(buffer), 0);
+
+    // Receive prediction from the server
+    uchar recvBuffer[sizeof(double)];
+    recv(sock, recvBuffer, sizeof(recvBuffer), 0);
+    double prediction;
+    memcpy(&prediction, recvBuffer, sizeof(double));
+
+    // Use the prediction for trading logic
+    Print("Prediction: ", prediction);
+
+    // Clean up
+    closesocket(sock);
+    WSACleanup();
+
+    return INIT_SUCCEEDED;
+}
