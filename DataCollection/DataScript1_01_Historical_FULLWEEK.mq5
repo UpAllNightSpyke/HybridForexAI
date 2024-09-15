@@ -30,8 +30,11 @@ void OnStart()
     double alligatorLips[];
     double rsi[];
     
-    // Retrieve market data (replace with actual data retrieval logic)
-    int dataCount = CopyRates(Symbol(), Period(), 0, 1000, rates);
+    // Calculate the start time for the last week
+    datetime startTime = TimeCurrent() - 7 * 24 * 60 * 60;
+    
+    // Retrieve market data from the last week
+    int dataCount = CopyRates(Symbol(), Period(), startTime, TimeCurrent(), rates);
     ArrayResize(ma, dataCount);
     ArrayResize(alligatorJaw, dataCount);
     ArrayResize(alligatorTeeth, dataCount);
@@ -58,7 +61,7 @@ void OnStart()
     }
 
     // Write data to TSV file
-    int file_handle = FileOpen("MarketData.tsv", FILE_WRITE|FILE_CSV|FILE_COMMON, "\t");
+    int file_handle = FileOpen("MarketData_LastWeek.tsv", FILE_WRITE|FILE_CSV|FILE_COMMON, "\t");
     if(file_handle != INVALID_HANDLE)
     {
         // Write header
@@ -72,7 +75,7 @@ void OnStart()
                       data.movingAverage, data.alligatorJaw, data.alligatorTeeth, data.alligatorLips, data.rsi);
         }
         FileClose(file_handle);
-        Print("Data written to MarketData.tsv");
+        Print("Data written to MarketData_LastWeek.tsv");
     }
     else
     {
