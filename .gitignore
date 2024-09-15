@@ -1,2 +1,4 @@
 # Ignore virtual environment directories
 venv/
+#Ignore the models directory to avoid pushing the models to the repository
+models/
