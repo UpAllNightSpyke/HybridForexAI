@@ -5,7 +5,7 @@ from custom_env import CustomEnv, load_prepared_data
 
 def main():
     # Define the file path to the prepared data
-    file_path = 'data/processed/MarketData_Prepared.tsv'
+    file_path = '../data/processed/MarketData_Prepared.tsv'
 
     # Load the prepared data
     data = load_prepared_data(file_path)
