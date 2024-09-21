@@ -1,7 +1,7 @@
-import gymnasium as gym
+import gym
 import numpy as np
 import pandas as pd
-from gymnasium import spaces
+from gym import spaces
 
 class CustomEnv(gym.Env):
     def __init__(self, data, render_mode=None):
@@ -14,39 +14,40 @@ class CustomEnv(gym.Env):
         self.entry_price = 0  # Price at which the position was entered
         self.transaction_costs = 0.10  # Example transaction cost
         self.cumulative_reward = 0  # Initialize cumulative reward
-        self.risk_percentage = 0.05  # Risk percentage (5%)
+
+        # Print column names for debugging
+        print("Data columns:", self.data.columns)
 
         # Define action and observation space
-        # Action space: 0: hold, 1: buy, 2: sell
-        self.action_space = spaces.Discrete(3)
+        self.action_space = spaces.Discrete(3)  # 0: hold, 1: buy, 2: sell
         self.observation_space = spaces.Box(low=0, high=1, shape=(data.shape[1],), dtype=np.float32)
 
     def step(self, action):
         self.current_step += 1
         if self.current_step >= len(self.data):
-            terminated = True
-            truncated = False
+            done = True
             reward = 0
             obs = np.zeros(self.observation_space.shape)  # Return a zero observation
         else:
-            terminated = False
-            truncated = False
+            done = False
             reward = self._calculate_reward(action)
             self.cumulative_reward += reward  # Update cumulative reward
             obs = self.data.iloc[self.current_step].values
 
         info = {}
 
-        return obs, reward, terminated, truncated, info
+        # Debug print statement
+        print(f"Step: {self.current_step}, Action: {action}, Reward: {reward}, Cumulative Reward: {self.cumulative_reward}, Balance: {self.balance}")
 
-    def reset(self, seed=None, options=None):
-        super().reset(seed=seed)
+        return obs, reward, done, info
+
+    def reset(self):
         self.current_step = 0
         self.balance = 1000  # Reset balance
         self.position = None  # Reset position
         self.entry_price = 0  # Reset entry price
         self.cumulative_reward = 0  # Reset cumulative reward
-        return self.data.iloc[self.current_step].values, {}
+        return self.data.iloc[self.current_step].values
 
     def render(self, mode='human'):
         if self.render_mode == 'human':
@@ -54,44 +55,37 @@ class CustomEnv(gym.Env):
             print(f"Step: {self.current_step}, Balance: {self.balance}")
 
     def _calculate_reward(self, action):
-        current_price = self.data.iloc[self.current_step]['Close']
-        next_price = self.data.iloc[self.current_step + 1]['Open'] if self.current_step + 1 < len(self.data) else current_price
+        current_price = self.data.iloc[self.current_step]['Close']  # Current step close price
+        next_price = self.data.iloc[self.current_step + 1]['Open'] if self.current_step + 1 < len(self.data) else current_price  # Next step open price
 
-        previous_balance = self.balance
-        risk_amount = self.balance * self.risk_percentage
-        lot_size = risk_amount / current_price
+        reward = 0
 
         if action == 1:  # Buy
             if self.position is None:
                 self.position = 'buy'
                 self.entry_price = current_price
-                reward = 0
             else:
-                reward = 0
+                reward = -0.5  # Adjusted penalty for invalid action
         elif action == 2:  # Sell
             if self.position is None:
                 self.position = 'sell'
                 self.entry_price = current_price
-                reward = 0
             else:
-                reward = 0
+                reward = -0.5  # Adjusted penalty for invalid action
         else:  # Hold
-            reward = 0
+            reward = -0.005  # Adjusted small penalty for holding
 
-        if self.position == 'buy' and action == 2:
-            profit = (next_price - self.entry_price - self.transaction_costs) * lot_size
+        # Calculate profit/loss if position is closed
+        if self.position == 'buy' and action == 2:  # Close buy position
+            profit = next_price - self.entry_price - self.transaction_costs
             self.balance += profit
-            reward = self.balance - previous_balance
+            reward = profit
             self.position = None
-        elif self.position == 'sell' and action == 1:
-            profit = (self.entry_price - next_price - self.transaction_costs) * lot_size
+        elif self.position == 'sell' and action == 1:  # Close sell position
+            profit = self.entry_price - next_price - self.transaction_costs
             self.balance += profit
-            reward = self.balance - previous_balance
+            reward = profit
             self.position = None
-
-        # Additional reward for maintaining a positive balance
-        if self.balance > previous_balance:
-            reward += 0.1 * (self.balance - previous_balance)
 
         if np.isnan(reward):
             reward = 0

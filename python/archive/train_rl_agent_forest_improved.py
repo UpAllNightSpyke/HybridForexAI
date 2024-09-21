@@ -3,10 +3,7 @@ warnings.filterwarnings("ignore", message="You tried to call render() but no `re
 
 import torch
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3.common.callbacks import EvalCallback
-from stable_baselines3.common.logger import configure
-from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from custom_env import CustomEnv, load_prepared_data
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
@@ -71,7 +68,8 @@ def main():
     selected_data = data[top_features]
 
     # Create the custom environment
-    env = DummyVecEnv([lambda: Monitor(CustomEnv(selected_data))])
+    env = DummyVecEnv([lambda: CustomEnv(selected_data)])
+    env = VecNormalize(env, norm_obs=True, norm_reward=True)
 
     # Check if a GPU is available and set the device accordingly
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -80,37 +78,22 @@ def main():
     # Define the RL algorithm (e.g., PPO) and move it to the GPU
     model = PPO('MlpPolicy', env, verbose=1, device=device)
 
-    # Define the evaluation environment
-    eval_env = DummyVecEnv([lambda: Monitor(CustomEnv(selected_data))])
+    # Train the RL agent
+    model.learn(total_timesteps=20000)
 
-    # Define the callback
-    eval_callback = EvalCallback(
-        eval_env, 
-        best_model_save_path='./logs/best_model',
-        log_path='./logs/', 
-        eval_freq=5000, 
-        deterministic=True, 
-        render=False
-    )
+    # Save the trained model
+    model.save("ppo_custom_env")
 
-    # Configure TensorBoard logger
-    new_logger = configure('./logs/', ["stdout", "tensorboard"])
-    model.set_logger(new_logger)
+    # Load the trained model
+    model = PPO.load("ppo_custom_env", device=device)
 
-    # Train the RL agent with logging and callback
-    model.learn(total_timesteps=20000, callback=eval_callback)
+    # Evaluate the trained model
+    evaluate_model(model, env)
 
-    # Load the best model
-    best_model_path = "./logs/best_model/best_model.zip"
-    best_model = PPO.load(best_model_path, device=device)
-
-    # Evaluate the best model
-    evaluate_model(best_model, env)
-
-    # Test the best model
+    # Test the trained model
     obs = env.reset()
     for iteration in range(1000):
-        action, _states = best_model.predict(obs)
+        action, _states = model.predict(obs)
         obs, rewards, dones, infos = env.step(action)
         info = infos[0] if isinstance(infos, list) else infos
         print(f"Iteration: {iteration}, Action: {action}, Reward: {rewards}, Balance: {env.get_attr('balance')[0]}")

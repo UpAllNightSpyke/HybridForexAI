@@ -1,7 +1,7 @@
-import gymnasium as gym
+import gym
 import numpy as np
 import pandas as pd
-from gymnasium import spaces
+from gym import spaces
 
 class CustomEnv(gym.Env):
     def __init__(self, data, render_mode=None):
@@ -24,29 +24,26 @@ class CustomEnv(gym.Env):
     def step(self, action):
         self.current_step += 1
         if self.current_step >= len(self.data):
-            terminated = True
-            truncated = False
+            done = True
             reward = 0
             obs = np.zeros(self.observation_space.shape)  # Return a zero observation
         else:
-            terminated = False
-            truncated = False
+            done = False
             reward = self._calculate_reward(action)
             self.cumulative_reward += reward  # Update cumulative reward
             obs = self.data.iloc[self.current_step].values
 
         info = {}
 
-        return obs, reward, terminated, truncated, info
+        return obs, reward, done, info
 
-    def reset(self, seed=None, options=None):
-        super().reset(seed=seed)
+    def reset(self):
         self.current_step = 0
         self.balance = 1000  # Reset balance
         self.position = None  # Reset position
         self.entry_price = 0  # Reset entry price
         self.cumulative_reward = 0  # Reset cumulative reward
-        return self.data.iloc[self.current_step].values, {}
+        return self.data.iloc[self.current_step].values
 
     def render(self, mode='human'):
         if self.render_mode == 'human':

@@ -1,7 +1,8 @@
 pandas
-numpy
-tensorflow  # or torch
-gym
+numpy==1.24.3
+tensorflow==2.14.0  # or torch==2.0.0
+gymnasium
 stable-baselines3
 matplotlib
 scikit-learn
+typing-extensions==4.8.0
