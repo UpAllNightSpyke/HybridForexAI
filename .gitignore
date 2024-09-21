@@ -10,3 +10,4 @@ logs/
 #ignore the compiled python files
 python/build/
 /python/dist/
+python/__pycache__/
