@@ -42,10 +42,7 @@ class CustomEnv(gym.Env):
                 self.best_balance = self.balance
                 self.best_iteration = self.current_step
 
-        info = {
-            'balance': self.balance,
-            'cumulative_reward': self.cumulative_reward
-        }
+        info = {}
 
         return obs, reward, terminated, truncated, info
 
@@ -58,7 +55,7 @@ class CustomEnv(gym.Env):
         self.cumulative_reward = 0  # Reset cumulative reward
         self.best_balance = self.balance  # Reset best balance
         self.best_iteration = self.current_step  # Reset best iteration
-        return self.data.iloc[self.current_step].values, {'balance': self.balance}
+        return self.data.iloc[self.current_step].values, {}
 
     def render(self, mode='human'):
         if self.render_mode == 'human':
@@ -111,3 +108,20 @@ class CustomEnv(gym.Env):
 
     def get_best_iteration_details(self):
         return self.best_iteration, self.best_balance
+
+def load_prepared_data(file_path):
+    # Open the file in binary read mode
+    with open(file_path, 'rb') as file:
+        raw_data = file.read()  # Read the entire file content into raw_data
+        # Determine the file encoding based on the byte order mark (BOM)
+        if raw_data.startswith(b'\xef\xbb\xbf'):
+            encoding = 'utf-8-sig'  # UTF-8 with BOM
+        elif raw_data.startswith(b'\xff\xfe') or raw_data.startswith(b'\xfe\xff'):
+            encoding = 'utf-16'  # UTF-16
+        else:
+            encoding = 'latin1'  # Default to Latin-1 encoding
+
+    # Read the file with the determined encoding
+    data = pd.read_csv(file_path, delimiter='\t', encoding=encoding)
+    print("Successfully loaded prepared data.")
+    return data
