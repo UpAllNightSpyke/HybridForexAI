@@ -1,6 +1,7 @@
 # Ignore virtual environment directories
 .venv/
 myenv/
+venv/
 #Ignore the models directory to avoid pushing the models to the repository
 models/
 #Ignore the VSCode directory to avoid pushing the settings to the repository
