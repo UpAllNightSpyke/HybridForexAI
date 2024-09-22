@@ -9,9 +9,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.monitor import Monitor
-from python.archive.custom_env1_6_working import CustomEnv, load_prepared_data
-from sklearn.ensemble import RandomForestRegressor
-import pandas as pd
+from python.archive.custom_env1_6_working import CustomEnv
+from python.archive.preprocess1_0_working import preprocess_observation, preprocess_action, load_prepared_data, select_top_features
 
 def evaluate_model(model, env, num_episodes=10):
     all_rewards = []
@@ -22,17 +21,24 @@ def evaluate_model(model, env, num_episodes=10):
 
     for episode in range(num_episodes):
         obs = env.reset()
-        initial_balance = env.unwrapped.get_attr('balance')[0]  # Get the initial balance at the start of each episode
+        obs = obs[0]  # Extract the first element from the list
+        initial_balance = 1000  # Assuming initial balance is 1000
         episode_rewards = 0
         done = False
         iteration = 0  # Initialize iteration counter
         while not done:
+            obs = preprocess_observation(obs)  # Preprocess observation
             action, _states = model.predict(obs)
-            obs, rewards, done, infos = env.step(action)
+            action = preprocess_action(action)  # Preprocess action
+            obs, rewards, dones, infos = env.step([action])  # Pass action as a list
+            obs = obs[0]  # Extract the first element from the list
+            rewards = rewards[0]  # Extract the first element from the list
+            dones = dones[0]  # Extract the first element from the list
+            infos = infos[0]  # Extract the first element from the list
             episode_rewards += rewards
             iteration += 1  # Increment iteration counter
 
-            current_balance = env.unwrapped.get_attr('balance')[0]
+            current_balance = infos['balance']
             # Print iteration details
             print(f"Iteration: {iteration}, Action: {action}, Reward: {rewards}, Balance: {current_balance}")
 
@@ -40,6 +46,8 @@ def evaluate_model(model, env, num_episodes=10):
             if current_balance > best_balance:
                 best_iteration = iteration
                 best_balance = current_balance
+
+            done = dones  # Update done status
 
         all_rewards.append(episode_rewards)
         profit_percentage = ((best_balance - initial_balance) / initial_balance) * 100
@@ -77,17 +85,7 @@ def main():
     print("Successfully loaded prepared data.")
     print(f"Column names in the dataset: {data.columns}")
 
-    target_column = 'Close'
-    features = data.drop(columns=[target_column])
-    target = data[target_column]
-
-    rf = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf.fit(features, target)
-    feature_importance = pd.Series(rf.feature_importances_, index=features.columns).sort_values(ascending=False)
-    top_features = feature_importance.head(9).index.tolist()
-    if 'Close' not in top_features:
-        top_features.append('Close')
-    selected_data = data[top_features]
+    selected_data = select_top_features(data)
 
     env = DummyVecEnv([lambda: Monitor(CustomEnv(selected_data))])
     model = PPO('MlpPolicy', env, verbose=1, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))

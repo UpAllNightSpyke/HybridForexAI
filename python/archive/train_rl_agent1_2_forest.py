@@ -4,7 +4,7 @@ warnings.filterwarnings("ignore", message="You tried to call render() but no `re
 import torch
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
-from custom_env import CustomEnv, load_prepared_data
+from python.archive.custom_env1_6_working import CustomEnv, load_prepared_data
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 

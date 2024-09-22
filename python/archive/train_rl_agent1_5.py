@@ -9,7 +9,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.monitor import Monitor
-from custom_env import CustomEnv, load_prepared_data
+from python.archive.custom_env1_6_working import CustomEnv, load_prepared_data
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 
