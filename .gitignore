@@ -12,3 +12,5 @@ logs/
 python/build/
 /python/dist/
 python/__pycache__/
+#Ignore executables
+*.exe
