@@ -17,6 +17,41 @@ def preprocess_action(action):
     # Assuming action is already discrete, so no preprocessing needed
     return action
 
+def load_raw_data(file_path):
+    """
+    Load the raw data from a file.
+    """
+    return pd.read_csv(file_path)
+
+def preprocess_data(data):
+    """
+    Perform initial preprocessing steps.
+    Example: cleaning, normalization, feature engineering.
+    """
+    # Example preprocessing: normalize the 'close' column
+    data['normalized_close'] = (data['close'] - data['close'].mean()) / data['close'].std()
+        
+    # Ensure 'volume' column is included in the preprocessing
+    if 'volume' not in data.columns:
+        raise KeyError("'volume' column is missing from the raw data")
+    
+    # Include additional columns
+    required_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'MovingAverage', 'AlligatorJaw', 'AlligatorTeeth', 'AlligatorLips', 'RSI']
+    for col in required_columns:
+        if col not in data.columns:
+            raise KeyError(f"'{col}' column is missing from the raw data")
+    
+    # Select only the required columns
+    data = data[required_columns]
+    
+    return data
+
+def save_preprocessed_data(data, file_path):
+    """
+    Save the preprocessed data to a file.
+    """
+    data.to_csv(file_path, index=False)
+
 def load_prepared_data(file_path):
     """
     Load and preprocess the data from the given file path.

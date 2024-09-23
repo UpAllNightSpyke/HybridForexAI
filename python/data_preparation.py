@@ -1,7 +1,7 @@
-import gym
+import gymnasium as gym
 import numpy as np
 import pandas as pd
-from gym import spaces
+from gymnasium import spaces
 
 class CustomEnv(gym.Env):
     def __init__(self, data):
@@ -53,3 +53,26 @@ def load_prepared_data(file_path):
     data = pd.read_csv(file_path, delimiter='\t', encoding=encoding)
     print("Successfully loaded prepared data.")
     return data
+
+def load_preprocessed_data(file_path):
+    """
+    Load the preprocessed data from a file.
+    """
+    return pd.read_csv(file_path)
+
+def prepare_data_for_training(data):
+    """
+    Perform additional preparation steps.
+    Example: splitting data, formatting, etc.
+    """
+    # Example: Select specific features for training
+    print("Columns in preprocessed data:", data.columns)
+    selected_features = data[['normalized_close', 'volume']]
+    # Further processing steps
+    return selected_features
+
+def save_prepared_data(data, file_path):
+    """
+    Save the prepared data to a file.
+    """
+    data.to_csv(file_path, sep='\t', index=False)
