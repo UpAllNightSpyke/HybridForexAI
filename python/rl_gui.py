@@ -1,120 +1,102 @@
 import warnings
 warnings.filterwarnings("ignore", message="You tried to call render() but no `render_mode` was passed to the env constructor.")
 
+import tkinter as tk
+from tkinter import messagebox
 import torch
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.monitor import Monitor
-from custom_env import CustomEnv, load_prepared_data
-from sklearn.ensemble import RandomForestRegressor
+from custom_env import CustomEnv
+from preprocess import preprocess_observation, preprocess_action, load_prepared_data, select_top_features
+import os
 import pandas as pd
 
 def evaluate_model(model, env, num_episodes=10):
     all_rewards = []
-    correct_actions = 0
-    total_actions = 0
-    total_profit = 0
+    total_profit_percentage = 0
+    best_iteration = 0
+    best_balance = float('-inf')
+    best_mean_reward = float('-inf')  # Initialize best mean reward to negative infinity
 
     for episode in range(num_episodes):
         obs = env.reset()
+        obs = obs[0]  # Extract the first element from the list
+        initial_balance = 1000  # Assuming initial balance is 1000
         episode_rewards = 0
         done = False
+        iteration = 0  # Initialize iteration counter
         while not done:
+            obs = preprocess_observation(obs)  # Preprocess observation
             action, _states = model.predict(obs)
-            obs, rewards, done, infos = env.step(action)
+            action = preprocess_action(action)  # Preprocess action
+            obs, rewards, dones, infos = env.step([action])  # Pass action as a list
+            obs = obs[0]  # Extract the first element from the list
+            rewards = rewards[0]  # Extract the first element from the list
+            dones = dones[0]  # Extract the first element from the list
+            infos = infos[0]  # Extract the first element from the list
             episode_rewards += rewards
+            iteration += 1  # Increment iteration counter
 
-            info = infos[0] if isinstance(infos, list) else infos
-            if 'correct_action' in info:
-                correct_actions += (action == info['correct_action'])
-            total_actions += 1
+            current_balance = infos['balance']
+            # Print iteration details
+            print(f"Iteration: {iteration}, Action: {action}, Reward: {rewards}, Balance: {current_balance}")
+
+            # Track the best iteration and balance
+            if current_balance > best_balance:
+                best_iteration = iteration
+                best_balance = current_balance
+
+            done = dones  # Update done status
 
         all_rewards.append(episode_rewards)
-        total_profit += env.get_attr('balance')[0] - 1000  # Assuming initial balance is 1000
+        profit_percentage = ((best_balance - initial_balance) / initial_balance) * 100
+        total_profit_percentage += profit_percentage
 
     avg_reward = sum(all_rewards) / num_episodes
-    accuracy = correct_actions / total_actions if total_actions > 0 else 0
-    avg_profit = total_profit / num_episodes
+    avg_profit_percentage = total_profit_percentage / num_episodes
 
     print(f"Average Reward over {num_episodes} episodes: {avg_reward}")
-    print(f"Accuracy over {num_episodes} episodes: {accuracy}")
-    print(f"Average Profit over {num_episodes} episodes: {avg_profit}")
+    print(f"Average Profit Percentage over {num_episodes} episodes: {avg_profit_percentage}%")
+    print(f"Initial Balance: {initial_balance}")
+
+    # Define thresholds
+    reward_threshold = 50  # Example threshold for average reward
+    profit_percentage_threshold = 10  # Example threshold for average profit percentage (10%)
+
+    # Provide feedback based on best balance and best iteration
+    if best_balance >= initial_balance and avg_profit_percentage >= profit_percentage_threshold:
+        print("The model's performance is good.")
+    else:
+        print("The model's performance is not satisfactory.")
+
+    # Print best iteration details
+    print(f"Best Iteration: {best_iteration}, Best Balance: {best_balance}")
+
+    # Check if a new best mean reward is found
+    if avg_reward > best_mean_reward:
+        best_mean_reward = avg_reward
+        print("New best mean found!")
 
 def main():
-    # Define the file path to the prepared data
-    file_path = './data/processed/MarketData_Prepared.tsv'  # Updated path
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # Load the prepared data
+    # Construct the file path relative to the script's location
+    file_path = os.path.join(script_dir, '..', 'data', 'processed', 'MarketData_Prepared.tsv')
+
+    # Load and preprocess data
     data = load_prepared_data(file_path)
+    selected_data = select_top_features(data)
 
-    # Print column names for debugging
-    print("Column names in the dataset:", data.columns)
-
-    # Define the target column (e.g., 'Close' or any other column you want to predict)
-    target_column = 'Close'  # Update this with the correct column name
-
-    # Train Random Forest for feature selection
-    features = data.drop(columns=[target_column])
-    target = data[target_column]
-    rf = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf.fit(features, target)
-    feature_importance = pd.Series(rf.feature_importances_, index=features.columns).sort_values(ascending=False)
-    top_features = feature_importance.head(9).index.tolist()  # Select top 9 features
-
-    # Ensure 'Close' column is included in the selected features
-    if 'Close' not in top_features:
-        top_features.append('Close')
-
-    # Use top features for your RL model
-    selected_data = data[top_features]
-
-    # Create the custom environment
+    # Set up the environment and model
     env = DummyVecEnv([lambda: Monitor(CustomEnv(selected_data))])
+    model = PPO('MlpPolicy', env, verbose=1, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
-    # Check if a GPU is available and set the device accordingly
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-
-    # Define the RL algorithm (e.g., PPO) and move it to the GPU
-    model = PPO('MlpPolicy', env, verbose=1, device=device)
-
-    # Define the evaluation environment
-    eval_env = DummyVecEnv([lambda: Monitor(CustomEnv(selected_data))])
-
-    # Define the callback
-    eval_callback = EvalCallback(
-        eval_env, 
-        best_model_save_path='./logs/best_model',
-        log_path='./logs/', 
-        eval_freq=5000, 
-        deterministic=True, 
-        render=False
-    )
-
-    # Configure TensorBoard logger
-    new_logger = configure('./logs/', ["stdout", "tensorboard"])
-    model.set_logger(new_logger)
-
-    # Train the RL agent with logging and callback
-    model.learn(total_timesteps=20000, callback=eval_callback)
-
-    # Load the best model
-    best_model_path = "./logs/best_model/best_model.zip"
-    best_model = PPO.load(best_model_path, device=device)
-
-    # Evaluate the best model
-    evaluate_model(best_model, env)
-
-    # Test the best model
-    obs = env.reset()
-    for iteration in range(1000):
-        action, _states = best_model.predict(obs)
-        obs, rewards, dones, infos = env.step(action)
-        info = infos[0] if isinstance(infos, list) else infos
-        print(f"Iteration: {iteration}, Action: {action}, Reward: {rewards}, Balance: {env.get_attr('balance')[0]}")
-        env.render()
+    # Evaluate the model
+    evaluate_model(model, env)
 
 if __name__ == "__main__":
     main()

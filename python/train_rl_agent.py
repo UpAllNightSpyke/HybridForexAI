@@ -11,6 +11,8 @@ from stable_baselines3.common.logger import configure
 from stable_baselines3.common.monitor import Monitor
 from custom_env import CustomEnv
 from preprocess import preprocess_observation, preprocess_action, load_prepared_data, select_top_features
+import os
+import pandas as pd
 
 def evaluate_model(model, env, num_episodes=10):
     all_rewards = []
@@ -80,7 +82,13 @@ def evaluate_model(model, env, num_episodes=10):
 
 def main():
     print("Starting training...")
-    file_path = './data/processed/MarketData_Prepared.tsv'
+    
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Construct the file path relative to the script's location
+    file_path = os.path.join(script_dir, '..', 'data', 'processed', 'MarketData_Prepared.tsv')
+    
     data = load_prepared_data(file_path)  # Ensure data is loaded here
     print("Successfully loaded prepared data.")
     print(f"Column names in the dataset: {data.columns}")
