@@ -5,7 +5,12 @@ from format_data import format_data
 from train_rl_agent import main as train_rl_agent_main
 import MetaTrader5 as mt5
 
-def main(symbol='XAUUSD', timeframe=mt5.TIMEFRAME_H1, start_date=datetime(2022, 1, 1), end_date=datetime(2022, 12, 31)):
+def main():
+    # Define parameters for scraping data
+    symbol = 'XAUUSD'
+    timeframe = mt5.TIMEFRAME_H1
+    start_date = datetime(2022, 1, 1)
+    end_date = datetime(2022, 12, 31)
     raw_output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'raw', 'MarketData.csv')
     formatted_output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'processed', 'MarketData_Prepared.tsv')
     
@@ -20,7 +25,7 @@ def main(symbol='XAUUSD', timeframe=mt5.TIMEFRAME_H1, start_date=datetime(2022, 
     format_data(raw_output_file, formatted_output_file)
     
     # Step 3: Train the RL agent
-    train_rl_agent_main()  # Call without arguments
+    train_rl_agent_main()
 
 if __name__ == "__main__":
     main()

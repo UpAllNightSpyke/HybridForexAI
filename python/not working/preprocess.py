@@ -17,6 +17,27 @@ def preprocess_action(action):
     # Assuming action is already discrete, so no preprocessing needed
     return action
 
+def load_raw_data(file_path):
+    """
+    Load the raw data from a file.
+    """
+    return pd.read_csv(file_path)
+
+def preprocess_data(data):
+    """
+    Perform initial preprocessing steps.
+    Example: cleaning, normalization, feature engineering.
+    """
+    # Example preprocessing: normalize the 'close' column
+    data['normalized_close'] = (data['close'] - data['close'].mean()) / data['close'].std()
+    return data
+
+def save_preprocessed_data(data, file_path):
+    """
+    Save the preprocessed data to a file.
+    """
+    data.to_csv(file_path, index=False)
+
 def load_prepared_data(file_path):
     """
     Load and preprocess the data from the given file path.

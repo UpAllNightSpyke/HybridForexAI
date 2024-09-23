@@ -87,7 +87,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Construct the file path relative to the script's location
-    file_path = os.path.join(script_dir, '..', 'data', 'processed', 'MarketDataPrepared.tsv')
+    file_path = os.path.join(script_dir, '..', 'data', 'processed', 'MarketData_Prepared.tsv')
     
     data = load_prepared_data(file_path)  # Ensure data is loaded here
     print("Successfully loaded prepared data.")

@@ -66,9 +66,7 @@ def prepare_data_for_training(data):
     Example: splitting data, formatting, etc.
     """
     # Example: Select specific features for training
-    print("Columns in preprocessed data:", data.columns)
     selected_features = data[['normalized_close', 'volume']]
-    # Further processing steps
     return selected_features
 
 def save_prepared_data(data, file_path):

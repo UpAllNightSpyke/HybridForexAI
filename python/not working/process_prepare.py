@@ -16,10 +16,18 @@ def main(input_file):
     print("Columns in raw data:", raw_data.columns)
     
     preprocessed_data = preprocess_data(raw_data)
+    
+    # Debugging: Print columns of preprocessed data
+    print("Columns in preprocessed data:", preprocessed_data.columns)
+    
     save_preprocessed_data(preprocessed_data, preprocessed_data_path)
 
     # Step 2: Prepare the data for training
     preprocessed_data = load_preprocessed_data(preprocessed_data_path)
+    
+    # Debugging: Print columns of loaded preprocessed data
+    print("Columns in loaded preprocessed data:", preprocessed_data.columns)
+    
     prepared_data = prepare_data_for_training(preprocessed_data)
     save_prepared_data(prepared_data, prepared_data_path)
 

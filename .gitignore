@@ -1,7 +1,9 @@
-# Ignore virtual environment directories
+# Ignore virtual and raw data environment directories
 .venv/
+.vscode/
 myenv/
 venv/
+data/
 #Ignore the models directory to avoid pushing the models to the repository
 models/
 #Ignore the VSCode directory to avoid pushing the settings to the repository
@@ -14,3 +16,6 @@ python/build/
 python/__pycache__/
 #Ignore executables
 *.exe
+#Ignore Collected Data
+*.tsv
+*.csv
