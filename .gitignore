@@ -17,5 +17,5 @@ python/__pycache__/
 #Ignore executables
 *.exe
 #Ignore Collected Data
-*.tsv
 *.csv
+*.tsv
