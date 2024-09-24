@@ -2,40 +2,7 @@ import MetaTrader5 as mt5
 import pandas as pd
 from datetime import datetime
 from indicators import indicator_functions
-from cryptography.fernet import Fernet
 import json
-import os
-
-# Define the key file path
-key_file_path = 'forex.key'
-
-# Check if the key file exists
-if not os.path.exists(key_file_path):
-    # Generate a new key and save it to the file
-    key = Fernet.generate_key()
-    with open(key_file_path, 'wb') as key_file:
-        key_file.write(key)
-else:
-    # Load the key from the file
-    with open(key_file_path, 'rb') as key_file:
-        key = key_file.read()
-
-cipher_suite = Fernet(key)
-
-def decrypt_data(data):
-    return cipher_suite.decrypt(data.encode()).decode()
-
-def load_account_settings():
-    with open('account_settings.json', 'r') as f:
-        account_settings = json.load(f)
-    
-    account_settings_decrypted = {
-        'account': decrypt_data(account_settings['account']),
-        'password': decrypt_data(account_settings['password']),
-        'server': decrypt_data(account_settings['server']),
-        'mt5_path': decrypt_data(account_settings['mt5_path'])
-    }
-    return account_settings_decrypted
 
 def initialize_mt5(mt5_path):
     if not mt5.initialize(mt5_path):
@@ -104,8 +71,6 @@ def load_account_settings():
 
 if __name__ == "__main__":
     settings = load_indicator_settings()
-    account_settings = load_account_settings()
-
     account_settings = load_account_settings()
 
     symbol = settings['symbol']

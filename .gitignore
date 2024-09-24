@@ -19,3 +19,5 @@ python/__pycache__/
 #Ignore Collected Data
 *.csv
 *.tsv
+*.json
+*.key
