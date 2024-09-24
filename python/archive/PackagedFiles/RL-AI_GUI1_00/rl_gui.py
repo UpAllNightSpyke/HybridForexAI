@@ -57,5 +57,9 @@ timeframe_dict = {
     '1 Month': mt5.TIMEFRAME_MN1
 }
 
+# Add copyright and version number
+ttk.Label(root, text="© UpAllNightSpyke").grid(column=0, row=10, columnspan=2, padx=10, pady=5, sticky='w')
+ttk.Label(root, text="Version 1.00a").grid(column=2, row=10, padx=10, pady=5, sticky='e')
+
 # Start the GUI event loop
 root.mainloop()

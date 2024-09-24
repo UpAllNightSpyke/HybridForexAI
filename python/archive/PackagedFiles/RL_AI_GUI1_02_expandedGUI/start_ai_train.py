@@ -4,11 +4,10 @@ from MT5_scraper import scrape_mt5_data
 from format_data import format_data
 from train_rl_agent import main as train_rl_agent_main
 import MetaTrader5 as mt5
-from indicators import get_available_indicators
 
 def main(symbol='XAUUSD', timeframe=mt5.TIMEFRAME_H1, start_date=datetime(2022, 1, 1), end_date=datetime(2022, 12, 31), account=3021640, password='AItester1!', server='PlexyTrade-Server01', mt5_path='', indicators=None):
     if indicators is None:
-        indicators = get_available_indicators()
+        indicators = ['SMA', 'EMA', 'RSI', 'MACD', 'Alligator']
     
     print(f"Selected indicators: {indicators}")
     

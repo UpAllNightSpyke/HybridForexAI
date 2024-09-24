@@ -1,5 +1,4 @@
 import pandas as pd
-from indicators import get_available_indicators
 
 def format_data(input_file, output_file):
     # Load data from CSV
@@ -13,13 +12,15 @@ def format_data(input_file, output_file):
         'high': 'High',
         'low': 'Low',
         'close': 'Close',
-        'tick_volume': 'Volume'
+        'tick_volume': 'Volume',
+        'RSI': 'RSI',
+        'Alligator_Jaw': 'AlligatorJaw',
+        'Alligator_Teeth': 'AlligatorTeeth',
+        'Alligator_Lips': 'AlligatorLips',
+        'SMA': 'SMA',
+        'EMA': 'EMA',
+        'MACD': 'MACD'
     }
-    
-    # Add available indicators to possible columns
-    available_indicators = get_available_indicators()
-    for indicator in available_indicators:
-        possible_columns[indicator] = indicator
     
     # Check for missing columns and raise an error if any required columns are missing
     required_columns = ['time', 'open', 'high', 'low', 'close', 'tick_volume']
@@ -29,9 +30,20 @@ def format_data(input_file, output_file):
     
     # Remove the 'real_volume' column if it exists
     if 'real_volume' in data.columns:
-        data.drop(columns=['real_volume'], inplace=True)
+        data = data.drop(columns=['real_volume'])
     
-    # Save the formatted data to TSV
+    # Rename columns to match the desired output
+    rename_columns = {col: new_col for col, new_col in possible_columns.items() if col in data.columns}
+    data.rename(columns=rename_columns, inplace=True)
+    print(f"Columns in the renamed data: {data.columns.tolist()}")
+    
+    # Save to TSV file
     data.to_csv(output_file, sep='\t', index=False)
+    print(f"Data written to {output_file}")
 
-    print(f"Formatted data saved to {output_file}")
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) != 3:
+        print("Usage: python format_data.py <input_file> <output_file>")
+    else:
+        format_data(sys.argv[1], sys.argv[2])
