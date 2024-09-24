@@ -17,25 +17,11 @@ def run_script():
     server = server_entry.get()
     mt5_path = mt5_path_entry.get()
     
-    indicators = []
-    if sma_var.get():
-        indicators.append('SMA')
-    if ema_var.get():
-        indicators.append('EMA')
-    if rsi_var.get():
-        indicators.append('RSI')
-    if macd_var.get():
-        indicators.append('MACD')
-    if alligator_var.get():
-        indicators.append('Alligator')
-    
-    print(f"Selected indicators in GUI: {indicators}")
-    
     # Start the training in a separate thread to keep the GUI responsive
-    threading.Thread(target=start_training, args=(symbol, timeframe, start_date, end_date, account, password, server, mt5_path, indicators)).start()
+    threading.Thread(target=start_training, args=(symbol, timeframe, start_date, end_date, account, password, server, mt5_path)).start()
 
-def start_training(symbol, timeframe, start_date, end_date, account, password, server, mt5_path, indicators):
-    start_ai_train_main(symbol, timeframe, start_date, end_date, account, password, server, mt5_path, indicators)
+def start_training(symbol, timeframe, start_date, end_date, account, password, server, mt5_path):
+    start_ai_train_main(symbol, timeframe, start_date, end_date, account, password, server, mt5_path)
 
 def browse_mt5_path():
     mt5_path = filedialog.askopenfilename(title="Select MetaTrader Terminal", filetypes=[("Executable Files", "*.exe")])
@@ -95,23 +81,9 @@ end_date_entry = DateEntry(root, date_pattern='yyyy-MM-dd')
 end_date_entry.set_date('2022-12-31')  # Default value
 end_date_entry.grid(column=1, row=8, padx=10, pady=5)
 
-# Add checkboxes for indicators
-sma_var = tk.BooleanVar(value=True)
-ema_var = tk.BooleanVar(value=True)
-rsi_var = tk.BooleanVar(value=True)
-macd_var = tk.BooleanVar(value=True)
-alligator_var = tk.BooleanVar(value=True)
-
-ttk.Label(root, text="Indicators:").grid(column=0, row=9, padx=10, pady=5, sticky='w')
-ttk.Checkbutton(root, text="SMA", variable=sma_var).grid(column=1, row=9, padx=10, pady=5, sticky='w')
-ttk.Checkbutton(root, text="EMA", variable=ema_var).grid(column=2, row=9, padx=10, pady=5, sticky='w')
-ttk.Checkbutton(root, text="RSI", variable=rsi_var).grid(column=1, row=10, padx=10, pady=5, sticky='w')
-ttk.Checkbutton(root, text="MACD", variable=macd_var).grid(column=2, row=10, padx=10, pady=5, sticky='w')
-ttk.Checkbutton(root, text="Alligator", variable=alligator_var).grid(column=1, row=11, padx=10, pady=5, sticky='w')
-
 # Create and place the run button
 run_button = ttk.Button(root, text="Run Script", command=run_script)
-run_button.grid(column=0, row=12, columnspan=3, padx=10, pady=10)
+run_button.grid(column=0, row=9, columnspan=3, padx=10, pady=10)
 
 # Dictionary to map combobox selection to MT5 timeframe constants
 timeframe_dict = {
@@ -127,8 +99,8 @@ timeframe_dict = {
 }
 
 # Add copyright and version number
-ttk.Label(root, text="© UpAllNightSpyke").grid(column=0, row=13, columnspan=2, padx=10, pady=5, sticky='w')
-ttk.Label(root, text="Version 1.00a").grid(column=2, row=13, padx=10, pady=5, sticky='e')
+ttk.Label(root, text="© UpAllNightSpyke").grid(column=0, row=10, columnspan=2, padx=10, pady=5, sticky='w')
+ttk.Label(root, text="Version 1.00a").grid(column=2, row=10, padx=10, pady=5, sticky='e')
 
 # Start the GUI event loop
 root.mainloop()
