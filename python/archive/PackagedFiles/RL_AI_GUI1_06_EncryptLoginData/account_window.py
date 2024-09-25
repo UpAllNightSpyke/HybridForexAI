@@ -2,23 +2,14 @@ import tkinter as tk
 from tkinter import messagebox
 import json
 from cryptography.fernet import Fernet
-import os
 
-# Define the key file path
-key_file_path = 'encryption_key.key'
-
-# Check if the key file exists
-if not os.path.exists(key_file_path):
-    # Generate a new key and save it to the file
-    key = Fernet.generate_key()
-    with open(key_file_path, 'wb') as key_file:
-        key_file.write(key)
-else:
-    # Load the key from the file
-    with open(key_file_path, 'rb') as key_file:
-        key = key_file.read()
-
+# Generate a key for encryption and decryption
+key = Fernet.generate_key()
 cipher_suite = Fernet(key)
+
+# Save the key to a file
+with open('encryption_key.key', 'wb') as key_file:
+    key_file.write(key)
 
 def encrypt_data(data):
     return cipher_suite.encrypt(data.encode()).decode()
@@ -62,9 +53,3 @@ def open_account_window():
         account_window.destroy()
 
     tk.Button(account_window, text="Submit", command=on_submit).grid(row=4, column=0, columnspan=2, pady=10)
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.withdraw()  # Hide the root window
-    open_account_window()
-    root.mainloop()

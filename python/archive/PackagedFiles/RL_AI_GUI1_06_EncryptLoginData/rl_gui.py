@@ -34,7 +34,7 @@ def run_script():
     timeframe = timeframe_dict[timeframe_combobox.get()]
     start_date = datetime.strptime(start_date_entry.get(), '%Y-%m-%d')
     end_date = datetime.strptime(end_date_entry.get(), '%Y-%m-%d')
-    selected_indicators = [indicator for indicator, var in indicator_vars.items() if var.get()]
+    selected_indicators = {indicator: var.get() for indicator, var in indicator_vars.items() if var.get()}
     # Add threading to run the script without freezing the GUI
     threading.Thread(target=start_ai_train_main, args=(symbol, timeframe, start_date, end_date, selected_indicators)).start()
 
@@ -83,6 +83,6 @@ run_button.grid(row=6+len(indicators), column=0, columnspan=2, padx=10, pady=5)
 
 # Add copyright and version number
 ttk.Label(root, text="© UpAllNightSpyke").grid(column=0, row=7+len(indicators), columnspan=2, padx=10, pady=5, sticky='w')
-ttk.Label(root, text="Version 1.07a").grid(column=2, row=7+len(indicators), padx=10, pady=5, sticky='e')
+ttk.Label(root, text="Version 1.06a").grid(column=2, row=7+len(indicators), padx=10, pady=5, sticky='e')
 
 root.mainloop()
