@@ -2,8 +2,8 @@ import pandas as pd
 from indicators import get_available_indicators
 
 def format_data(input_file, output_file):
-    # Load data from CSV with tab delimiter
-    data = pd.read_csv(input_file, delimiter='\t')
+    # Load data from CSV
+    data = pd.read_csv(input_file)
     print(f"Columns in the input data: {data.columns.tolist()}")
     
     # Define the required columns based on possible indicators

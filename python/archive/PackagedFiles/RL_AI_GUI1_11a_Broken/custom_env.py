@@ -66,8 +66,8 @@ class CustomEnv(gym.Env):
             print(f"Step: {self.current_step}, Balance: {self.balance}")
 
     def _calculate_reward(self, action):
-        current_price = self.data.iloc[self.current_step]['Close']
-        next_price = self.data.iloc[self.current_step + 1]['Open'] if self.current_step + 1 < len(self.data) else current_price
+        current_price = self.data.iloc[self.current_step]['close']
+        next_price = self.data.iloc[self.current_step + 1]['open'] if self.current_step + 1 < len(self.data) else current_price
 
         previous_balance = self.balance
         risk_amount = self.balance * self.risk_percentage

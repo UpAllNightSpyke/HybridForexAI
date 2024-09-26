@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-import json
+import json  # Import the json module
 
 def open_indicator_window(symbol_entry, timeframe_combobox, timeframe_dict, start_date_entry, end_date_entry):
     indicator_window = tk.Toplevel()

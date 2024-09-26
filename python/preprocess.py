@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.impute import SimpleImputer
 
 def preprocess_observation(observation):
     """
@@ -18,16 +17,12 @@ def preprocess_action(action):
     # Assuming action is already discrete, so no preprocessing needed
     return action
 
-def load_prepared_data(file_path, time_format='int'):
+def load_prepared_data(file_path):
     """
     Load and preprocess the data from the given file path.
     """
     # Read the file with a specified encoding
-    data = pd.read_csv(file_path, sep='\t')
-    
-    # Convert 'time' column to Unix timestamp in seconds
-    data['time'] = pd.to_datetime(data['time']).astype('int64') // 10**9
-
+    data = pd.read_csv(file_path, delimiter='\t', encoding='utf-8')
     print("Successfully loaded prepared data.")
     return data
 
@@ -35,42 +30,19 @@ def select_top_features(data, target_column='close', num_features=9):
     """
     Select the top features based on feature importance using a RandomForestRegressor.
     """
-    features = data.drop(columns=['time', target_column])
+    # Ensure the date column is removed or converted
+    if 'time' in data.columns:
+        data['time'] = pd.to_datetime(data['time'])
+        data['time'] = data['time'].map(pd.Timestamp.timestamp)  # Convert to timestamp
+
+    features = data.drop(columns=[target_column])
     target = data[target_column]
-    
-    # Handle NaN values
-    imputer = SimpleImputer(strategy='mean')
-    features = imputer.fit_transform(features)
-    
-    # Remove columns with no observed values
-    valid_columns = [col for col in data.drop(columns=['time', target_column]).columns if col in data.columns and data[col].notna().any()]
-    features = pd.DataFrame(features, columns=valid_columns)
-    
-    # Log the columns and their NaN status
-    print("Columns after imputation and filtering:")
-    for col in valid_columns:
-        print(f"{col}: NaN count = {data[col].isna().sum()}")
-    
-    rf = RandomForestRegressor()
+
+    rf = RandomForestRegressor(n_estimators=100, random_state=42)
     rf.fit(features, target)
-    
-    importances = rf.feature_importances_
-    feature_names = features.columns
-    
-    # Ensure feature_names and importances have the same length
-    if len(feature_names) != len(importances):
-        raise ValueError("Mismatch between feature names and importances lengths")
-    
-    feature_importances = pd.DataFrame({'feature': feature_names, 'importance': importances})
-    feature_importances = feature_importances.sort_values(by='importance', ascending=False)
-    
-    top_features = feature_importances['feature'].head(num_features).tolist()
-    selected_data = data[['time', target_column] + top_features]
-    
-    # Check for NaN values in the selected data
-    if selected_data.isna().any().any():
-        print("NaN values found in the selected data:")
-        print(selected_data.isna().sum())
-        raise ValueError("NaN values found in the selected data")
-    
+    feature_importance = pd.Series(rf.feature_importances_, index=features.columns).sort_values(ascending=False)
+    top_features = feature_importance.head(num_features).index.tolist()
+    if target_column not in top_features:
+        top_features.append(target_column)
+    selected_data = data[top_features]
     return selected_data

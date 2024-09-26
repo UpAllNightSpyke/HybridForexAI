@@ -95,6 +95,12 @@ def main():
 
     selected_data = select_top_features(data)
 
+    # Check for NaN values in the selected data
+    if selected_data.isna().any().any():
+        print("NaN values found in the selected data:")
+        print(selected_data.isna().sum())
+        raise ValueError("NaN values found in the selected data")
+
     env = DummyVecEnv([lambda: Monitor(CustomEnv(selected_data))])
     model = PPO('MlpPolicy', env, verbose=1, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
