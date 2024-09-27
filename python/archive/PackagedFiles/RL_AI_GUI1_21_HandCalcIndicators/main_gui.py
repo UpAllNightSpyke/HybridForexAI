@@ -117,7 +117,7 @@ class ForexApp:
 
     def add_footer(self):
         ttk.Label(self.root, text="© UpAllNightSpyke, 2024").grid(column=0, row=2, columnspan=2, padx=10, pady=5, sticky='w')
-        ttk.Label(self.root, text="Version 1.20a").grid(column=2, row=2, padx=10, pady=5, sticky='e')
+        ttk.Label(self.root, text="Version 1.21a").grid(column=2, row=2, padx=10, pady=5, sticky='e')
 
     def open_account_window(self):
         AccountWindow(self.root, self.account_details)
