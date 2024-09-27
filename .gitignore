@@ -9,6 +9,7 @@ models/
 #Ignore the VSCode directory to avoid pushing the settings to the repository
 .vscode/
 #Ignore the logs directory to avoid pushing the logs to the repository
+_logs/
 logs/
 #ignore the compiled python files
 python/build/
