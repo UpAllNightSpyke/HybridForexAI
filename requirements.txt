@@ -6,3 +6,6 @@ stable-baselines3
 matplotlib
 scikit-learn
 typing-extensions==4.5.0
+cryptography==3.4.7
+metatrader5
+tkcalendar

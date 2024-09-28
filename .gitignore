@@ -15,9 +15,11 @@ logs/
 python/build/
 /python/dist/
 python/__pycache__/
+/python/indicators/__pycache__/
 #Ignore executables
 *.exe
 #Ignore Collected Data
+*.pyc
 *.csv
 *.tsv
 *.json
