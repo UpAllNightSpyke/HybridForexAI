@@ -1,0 +1,62 @@
+{
+    "Symbol": "EURUSD",
+    "Timeframe": "M30",
+    "Start Date": "2024-09-11",
+    "End Date": "2024-09-13",
+    "Alligator": {
+        "params": {
+            "jaw_period": "13",
+            "jaw_shift": "8",
+            "teeth_period": "8",
+            "teeth_shift": "5",
+            "lips_period": "5",
+            "lips_shift": "4",
+            "applied_price": "CLOSE"
+        },
+        "is_used": true
+    },
+    "Ema": {
+        "params": {
+            "period": "200",
+            "shift": "0",
+            "method": "EMA",
+            "applied_price": "OPEN"
+        },
+        "is_used": true
+    },
+    "Macd": {
+        "params": {
+            "fast_ema_period": "12",
+            "slow_ema_period": "26",
+            "signal_period": "9",
+            "applied_price": "CLOSE"
+        },
+        "is_used": true
+    },
+    "Rsi": {
+        "params": {
+            "period": "24",
+            "applied_price": "CLOSE",
+            "overbought": "70",
+            "oversold": "30"
+        },
+        "is_used": true
+    },
+    "Sma": {
+        "params": {
+            "period": "14",
+            "shift": "2",
+            "applied_price": "CLOSE"
+        },
+        "is_used": true
+    },
+    "Zigzag": {
+        "params": {
+            "depth": "12",
+            "deviation": "5",
+            "backstep": "3",
+            "applied_price": "CLOSE"
+        },
+        "is_used": true
+    }
+}

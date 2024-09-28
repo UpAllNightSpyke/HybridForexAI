@@ -22,5 +22,3 @@ python/__pycache__/
 *.pyc
 *.csv
 *.tsv
-*.json
-*.key
