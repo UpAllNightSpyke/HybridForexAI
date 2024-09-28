@@ -20,7 +20,7 @@ def calculate_sma(data, symbol, timeframe, params):
     sma_df = pd.DataFrame(index=data.index)
     sma_df['SMA'] = data[applied_price].rolling(window=period).mean().shift(shift)
 
-    # Set NaN SMA values to 0
-    sma_df.fillna(0, inplace=True)
+    # # Set NaN SMA values to 0
+    # sma_df.fillna(0, inplace=True)
     
     return sma_df

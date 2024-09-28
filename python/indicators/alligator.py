@@ -23,7 +23,7 @@ def calculate_alligator(data, symbol, timeframe, params):
     alligator_df['Alligator_Teeth'] = data[applied_price].rolling(window=teeth_period).mean().shift(teeth_shift)
     alligator_df['Alligator_Lips'] = data[applied_price].rolling(window=lips_period).mean().shift(lips_shift)
 
-    # Set NaN Alligator values to 0
-    alligator_df.fillna(0, inplace=True)
+    # # Set NaN Alligator values to 0
+    # alligator_df.fillna(0, inplace=True)
     
     return alligator_df

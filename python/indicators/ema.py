@@ -25,7 +25,7 @@ def calculate_ema(data, symbol, timeframe, params):
     ema_df = pd.DataFrame(index=data.index)
     ema_df['EMA'] = data[applied_price].ewm(span=period, adjust=False).mean().shift(shift)
 
-    # Set NaN EMA values to 0
-    ema_df.fillna(0, inplace=True)
+    # # Set NaN EMA values to 0
+    # ema_df.fillna(0, inplace=True)
     
     return ema_df

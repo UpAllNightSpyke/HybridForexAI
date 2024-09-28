@@ -21,7 +21,7 @@ def calculate_zigzag(data, symbol, timeframe, params):
     zigzag_df = pd.DataFrame(index=data.index)
     zigzag_df['Zigzag'] = data[applied_price]  # This is a placeholder, replace with actual Zigzag calculation
 
-    # Set NaN Zigzag values to 0
-    zigzag_df.fillna(0, inplace=True)
+    # # Set NaN Zigzag values to 0
+    # zigzag_df.fillna(0, inplace=True)
     
     return zigzag_df

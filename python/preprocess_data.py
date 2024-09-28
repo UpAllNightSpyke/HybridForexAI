@@ -1,9 +1,9 @@
 import pandas as pd
 from indicators.functions import initialize_indicators, get_available_indicators
 
-def remove_zero_rows(data, indicator_columns):
-    # Remove rows where any of the indicator columns have zeros
-    data = data[(data[indicator_columns] != 0).all(axis=1)]
+def remove_nan_rows(data, indicator_columns):
+    # Remove rows where any of the indicator columns have NaN values
+    data = data.dropna(subset=indicator_columns)
     return data
 
 if __name__ == "__main__":
@@ -24,8 +24,8 @@ if __name__ == "__main__":
     # Print the indicator columns for debugging
     print(f"Indicator columns to be cleaned: {indicator_columns}")
 
-    # Remove rows with zeros in the indicator columns
-    cleaned_data = remove_zero_rows(data, indicator_columns)
+    # Remove rows with NaN values in the indicator columns
+    cleaned_data = remove_nan_rows(data, indicator_columns)
 
     # Save the cleaned data to a new TSV file
     output_file = 'data/cleaned/XAUUSD_30_20240909_20240913_cleaned.tsv'  # Replace with your output file path

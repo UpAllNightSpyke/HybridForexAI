@@ -23,7 +23,7 @@ def calculate_macd(data, symbol, timeframe, params):
     macd_df['Signal_Line'] = macd_df['MACD_Line'].ewm(span=signal_period, adjust=False).mean()
     macd_df['MACD_Histogram'] = macd_df['MACD_Line'] - macd_df['Signal_Line']
 
-    # Set NaN MACD values to 0
-    macd_df.fillna(0, inplace=True)
+    # # Set NaN MACD values to 0
+    # macd_df.fillna(0, inplace=True)
     
     return macd_df

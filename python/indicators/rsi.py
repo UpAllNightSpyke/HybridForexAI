@@ -25,8 +25,8 @@ def calculate_rsi(data, symbol, timeframe, params):
     rsi_df = pd.DataFrame(index=data.index)
     rsi_df['RSI'] = 100 - (100 / (1 + rs))
 
-    # Set NaN RSI values to 0
-    rsi_df.fillna(0, inplace=True)
+    # # Set NaN RSI values to 0
+    # rsi_df.fillna(0, inplace=True)
 
     # Add signals for overbought and oversold
     rsi_df['RSI_Signal'] = 0
