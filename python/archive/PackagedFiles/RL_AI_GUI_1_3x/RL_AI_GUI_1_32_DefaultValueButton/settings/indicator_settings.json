@@ -1,0 +1,62 @@
+{
+    "Symbol": "XAUUSD",
+    "Timeframe": "M30",
+    "Start Date": "2024-09-05",
+    "End Date": "2024-09-16",
+    "Alligator": {
+        "params": {
+            "jaw_period": "13",
+            "jaw_shift": "8",
+            "teeth_period": "8",
+            "teeth_shift": "5",
+            "lips_period": "5",
+            "lips_shift": "4",
+            "applied_price": "CLOSE"
+        },
+        "is_used": true
+    },
+    "Ema": {
+        "params": {
+            "period": "200",
+            "shift": "0",
+            "method": "EMA",
+            "applied_price": "OPEN"
+        },
+        "is_used": false
+    },
+    "Macd": {
+        "params": {
+            "signal_period": "9",
+            "applied_price": "CLOSE",
+            "fast_period": "12",
+            "slow_period": "26"
+        },
+        "is_used": false
+    },
+    "Rsi": {
+        "params": {
+            "period": "24",
+            "applied_price": "CLOSE",
+            "overbought": "70",
+            "oversold": "30"
+        },
+        "is_used": true
+    },
+    "Sma": {
+        "params": {
+            "period": "14",
+            "shift": "2",
+            "applied_price": "CLOSE"
+        },
+        "is_used": true
+    },
+    "Zigzag": {
+        "params": {
+            "depth": "12",
+            "deviation": "5",
+            "backstep": "3",
+            "applied_price": "CLOSE"
+        },
+        "is_used": false
+    }
+}
