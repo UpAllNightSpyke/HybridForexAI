@@ -22,5 +22,15 @@ class TradingEnv(gym.Env):
         return obs, reward, done, {}
 
     def _calculate_reward(self, action):
-        # Define reward function based on action and market movement
-        return 0  # Placeholder
+        if action == 0:  # Buy
+            self.buy_price = self.data['close'][self.current_step]
+            return 0  # No immediate reward for buying
+        elif action == 1:  # Sell
+            if self.buy_price is not None:
+                profit = self.data['close'][self.current_step] - self.buy_price
+                self.buy_price = None  # Reset buy price
+                return profit
+            else:
+                return -1  # Penalty for selling without a position
+        else:  # Hold
+            return 0  # No reward for holding
