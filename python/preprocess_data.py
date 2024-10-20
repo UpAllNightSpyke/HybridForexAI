@@ -48,6 +48,12 @@ def process_data(symbol, timeframe):
         # Load your data from the CSV file
         data = pd.read_csv(input_file)
 
+        # Convert 'time' column to datetime objects
+        data['time'] = pd.to_datetime(data['time'])
+
+        # Convert datetime objects to numerical timestamps (seconds since epoch)
+        data['time'] = data['time'].astype('int64') // 10**9  
+
         # Print the columns of the DataFrame for debugging
         print(f"Columns in the input data: {data.columns.tolist()}")
 

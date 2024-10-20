@@ -41,8 +41,14 @@ class AlgorithmSpecificSettingsWindow:
         if not isinstance(self.algorithm_settings.get(self.algorithm), dict):
             self.algorithm_settings[self.algorithm] = {'params': {}}
         for param, var in self.param_vars.items():
-            self.algorithm_settings[self.algorithm]['params'][param] = var.get()
-        
+            value = var.get()
+            # Attempt to convert to float, if not possible, keep as string
+            try:
+                value = float(value)
+            except ValueError:
+                pass
+            self.algorithm_settings[self.algorithm]['params'][param] = value
+
         print(f"Settings for {self.algorithm} saved.")
         self.window.destroy()
 

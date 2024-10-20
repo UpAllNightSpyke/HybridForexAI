@@ -1,10 +1,10 @@
-#import sys
 import os
 import json
 import tkinter as tk
 from tkinter import ttk, messagebox
 from appdirs import user_data_dir  # Import for user data directory
-from rl_algorithms import get_available_algorithms
+from rl_algorithms.utils import get_available_algorithms  # Import here
+from rl_algorithms.functions import initialize_algorithms, rl_algorithms
 
 # Get the user data directory
 user_data_path = user_data_dir("RLNNApp", "UpAllNightSpyke")  # Adjust app_name and author if needed
@@ -14,39 +14,39 @@ SETTINGS_FILE = os.path.join(user_data_path, 'settings', 'algorithm_settings.jso
 DEFAULT_SETTINGS = {
     "A2C": {
         "params": {
-            "learning_rate": "0.0007",
-            "n_steps": "5",
-            "gamma": "0.99",
-            "gae_lambda": "1.0",
-            "ent_coef": "0.01",
-            "vf_coef": "0.5",
-            "max_grad_norm": "0.5",
-            "total_timesteps": "10000"
+            "learning_rate": 0.0007,
+            "n_steps": 5,
+            "gamma": 0.99,
+            "gae_lambda": 1.0,
+            "ent_coef": 0.01,
+            "vf_coef": 0.5,
+            "max_grad_norm": 0.5,
+            "total_timesteps": 10000
         }
     },
     "DQN": {
         "params": {
-            "learning_rate": "0.001",
-            "buffer_size": "100000",
-            "learning_starts": "1000",
-            "batch_size": "32",
-            "tau": "0.005",
-            "gamma": "0.99",
-            "train_freq": "4",
-            "gradient_steps": "1",
-            "total_timesteps": "10000"
+            "learning_rate": 0.001,
+            "buffer_size": 100000,
+            "learning_starts": 1000,
+            "batch_size": 32,
+            "tau": 0.005,
+            "gamma": 0.99,
+            "train_freq": 4,
+            "gradient_steps": 1,
+            "total_timesteps": 10000
         }
     },
     "PPO": {
         "params": {
-            "learning_rate": "0.0003",
-            "n_steps": "2048",
-            "batch_size": "64",
-            "n_epochs": "10",
-            "gamma": "0.99",
-            "gae_lambda": "0.95",
-            "clip_range": "0.2",
-            "total_timesteps": "10000"
+            "learning_rate": 0.0003,
+            "n_steps": 2048,
+            "batch_size": 64,
+            "n_epochs": 10,
+            "gamma": 0.99,
+            "gae_lambda": 0.95,
+            "clip_range": 0.2,
+            "total_timesteps": 10000
         }
     },
     "selected_algorithm": "PPO"
@@ -59,13 +59,8 @@ class RLModelSelectionWindow:
         self.window = None
         self.algorithm_var = None
 
-        # Initialize attributes here:
-        self.algorithms = {} 
-        self.algorithm_params = {}
-
-        from rl_algorithms.functions import get_available_algorithms, initialize_algorithms  # Lazy load
-        initialize_algorithms()
-        self.algorithms = get_available_algorithms(self.algorithms)
+        self.algorithm_params = initialize_algorithms()
+        self.algorithms = get_available_algorithms(rl_algorithms)
 
         self.create_model_selection_window()
 
@@ -73,13 +68,18 @@ class RLModelSelectionWindow:
         self.window = tk.Toplevel(self.parent)
         self.window.title("RL Model Selection")
 
-        from rl_algorithms.functions import get_available_algorithms, initialize_algorithms  # Lazy load
-        initialize_algorithms(self.algorithms, self.algorithm_params)
-        self.algorithms = get_available_algorithms(self.algorithms)
-
         ttk.Label(self.window, text="Select Algorithm:").grid(row=0, column=0, padx=10, pady=5, sticky=tk.W)
-        self.algorithm_var = tk.StringVar(value=self.algorithms[0])
-        ttk.Combobox(self.window, textvariable=self.algorithm_var, values=self.algorithms).grid(row=0, column=1, padx=10, pady=5, sticky=tk.EW)
+        self.algorithm_var = tk.StringVar(value=self.algorithm_settings['selected_algorithm'])
+
+        # Initialize algorithm_names here, AFTER initialize_algorithms and get_available_algorithms
+        self.algorithm_params = initialize_algorithms()  # Assign the returned dictionary
+        self.algorithms = get_available_algorithms(self.algorithms)
+        algorithm_names = list(self.algorithms.keys())  # Get the algorithm names here
+
+        self.algorithm_combobox = ttk.Combobox(self.window, textvariable=self.algorithm_var, values=algorithm_names)
+        self.algorithm_combobox.grid(row=0, column=1, padx=10, pady=5, sticky=tk.EW)
+
+        self.update_algorithm_dropdown()
 
         settings_button = ttk.Button(self.window, text="Settings", command=self.open_algorithm_settings)
         settings_button.grid(row=1, column=0, columnspan=2, pady=10)
@@ -93,8 +93,17 @@ class RLModelSelectionWindow:
     def open_algorithm_settings(self):
         from rl_gui.algorithm_settings_gui import AlgorithmSpecificSettingsWindow  
         algorithm = self.algorithm_var.get()
-        params = self.algorithm_params[algorithm.lower()]
-        AlgorithmSpecificSettingsWindow(self.window, self, algorithm, self.algorithm_settings, params)
+        if algorithm.lower() in self.algorithm_params:
+            params = self.algorithm_params[algorithm.lower()]
+            AlgorithmSpecificSettingsWindow(self.window, self, algorithm, self.algorithm_settings, params)
+        else:
+            messagebox.showerror("Error", f"No parameters found for algorithm: {algorithm}")
+
+    def update_algorithm_dropdown(self):
+        algorithm_names = list(self.algorithms.keys())
+        self.algorithm_combobox['values'] = algorithm_names
+        if algorithm_names:  # Check if algorithm_names is not empty
+            self.algorithm_var.set(algorithm_names[0])  # Set the first algorithm as the default
 
     def save_model_selection(self):
         algorithm = self.algorithm_var.get()

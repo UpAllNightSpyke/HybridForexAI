@@ -3,39 +3,50 @@ from gymnasium import spaces
 import numpy as np
 
 class TradingEnv(gym.Env):
-    def __init__(self, data, symbol, timeframe):  # Add symbol and timeframe arguments
+    def __init__(self, data, symbol, timeframe):
         super(TradingEnv, self).__init__()
         self.data = data
         self.current_step = 0
-        self.action_space = spaces.Discrete(4)  # 0: Buy, 1: Sell, 2: Hold Short Term, 3: Hold Long Term
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(data.shape[1],), dtype=np.float32)
+        self.action_space = spaces.Discrete(4)
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(6,), dtype=np.float32)  # Shape should be (6,)
         self.symbol = symbol
         self.timeframe = timeframe
+        self.buy_price = None  # Initialize buy_price here
         
-    def reset(self):
+    def reset(self, seed=None):
+        if seed is not None:
+            np.random.seed(seed)
         self.current_step = 0
-        return self.data[self.current_step]
+        obs = self.data.iloc[self.current_step][['time', 'open', 'high', 'low', 'close', 'tick_volume']].values
+        return obs, {}  # Return observation and an empty info dictionary
 
     def step(self, action):
         self.current_step += 1
         reward = self._calculate_reward(action)
         done = self.current_step >= len(self.data) - 1
-        obs = self.data[self.current_step] if not done else np.zeros(self.data.shape[1])
-        return obs, reward, done, {}
+
+        # Select only numerical columns for observation
+        if not done:
+            obs = self.data.iloc[self.current_step][['time', 'open', 'high', 'low', 'close', 'tick_volume']].values
+        else:
+            obs = np.zeros(self.data[['time', 'open', 'high', 'low', 'close', 'tick_volume']].shape[1])  # Match the number of numerical columns
+
+        truncated = False
+        return obs, reward, done, truncated, {}
 
     def _calculate_reward(self, action):
         if action == 0:  # Buy
             self.buy_price = self.data['close'][self.current_step]
-            return 0  # No immediate reward for buying
+            return int(0)  # No immediate reward for buying (cast to int)
         elif action == 1:  # Sell
             if self.buy_price is not None:
                 profit = self.data['close'][self.current_step] - self.buy_price
                 self.buy_price = None  # Reset buy price
                 if profit > 0:
-                    return profit * 1.1  # Reward for profit (10% bonus)
+                    return float(profit * 1.1)  # Reward for profit (cast to float)
                 else:
-                    return profit  # Return the loss as the reward
+                    return float(profit)  # Return the loss as the reward (cast to float)
             else:
-                return -1  # Penalty for selling without a position
+                return int(-1)  # Penalty for selling without a position (cast to int)
         else:  # Hold
-            return 0  # No reward for holding
+            return int(0)  # No reward for holding (cast to int)
