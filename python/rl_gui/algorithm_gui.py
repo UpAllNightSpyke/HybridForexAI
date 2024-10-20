@@ -4,6 +4,7 @@ import json
 import tkinter as tk
 from tkinter import ttk, messagebox
 from appdirs import user_data_dir  # Import for user data directory
+from rl_algorithms import get_available_algorithms
 
 # Get the user data directory
 user_data_path = user_data_dir("RLNNApp", "UpAllNightSpyke")  # Adjust app_name and author if needed
@@ -57,16 +58,24 @@ class RLModelSelectionWindow:
         self.algorithm_settings = self.load_settings()
         self.window = None
         self.algorithm_var = None
-        self.algorithms = None
-        self.algorithm_params = None
+
+        # Initialize attributes here:
+        self.algorithms = {} 
+        self.algorithm_params = {}
+
+        from rl_algorithms.functions import get_available_algorithms, initialize_algorithms  # Lazy load
+        initialize_algorithms()
+        self.algorithms = get_available_algorithms(self.algorithms)
+
         self.create_model_selection_window()
 
     def create_model_selection_window(self):
         self.window = tk.Toplevel(self.parent)
         self.window.title("RL Model Selection")
 
-        from rl_algorithms.functions import get_available_algorithms  # Lazy load
-        self.algorithms, self.algorithm_params = get_available_algorithms()
+        from rl_algorithms.functions import get_available_algorithms, initialize_algorithms  # Lazy load
+        initialize_algorithms(self.algorithms, self.algorithm_params)
+        self.algorithms = get_available_algorithms(self.algorithms)
 
         ttk.Label(self.window, text="Select Algorithm:").grid(row=0, column=0, padx=10, pady=5, sticky=tk.W)
         self.algorithm_var = tk.StringVar(value=self.algorithms[0])
@@ -82,7 +91,7 @@ class RLModelSelectionWindow:
         default_button.grid(row=2, column=1, pady=10, sticky=tk.E)
 
     def open_algorithm_settings(self):
-        from rl_gui.algorithm_settings_gui import AlgorithmSpecificSettingsWindow  # Lazy load
+        from rl_gui.algorithm_settings_gui import AlgorithmSpecificSettingsWindow  
         algorithm = self.algorithm_var.get()
         params = self.algorithm_params[algorithm.lower()]
         AlgorithmSpecificSettingsWindow(self.window, self, algorithm, self.algorithm_settings, params)

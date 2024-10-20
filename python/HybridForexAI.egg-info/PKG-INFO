@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: HybridForexAI
+Version: 1.40a0
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Requires-Dist: appdirs
+Requires-Dist: numpy==1.24.3
+Requires-Dist: tensorflow
+Requires-Dist: gymnasium
+Requires-Dist: stable-baselines3
+Requires-Dist: matplotlib
+Requires-Dist: typing-extensions==4.5.0
+Requires-Dist: cryptography==3.4.7
+Requires-Dist: metatrader5
+Requires-Dist: tkcalendar

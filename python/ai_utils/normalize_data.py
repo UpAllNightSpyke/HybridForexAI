@@ -56,7 +56,7 @@ def normalize_data():
         # Fit and transform the selected columns
         data[cols_to_normalize] = scaler.fit_transform(data[cols_to_normalize])
 
-        # Save the normalized data
+        # Save the normalized data 
         data.to_csv(output_file, index=False)
         print(f"Normalized data saved to {output_file}")
 
