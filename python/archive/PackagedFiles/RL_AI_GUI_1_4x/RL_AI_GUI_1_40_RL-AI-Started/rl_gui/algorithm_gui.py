@@ -1,15 +1,10 @@
 import os
 import json
-from appdirs import user_data_dir  # Import for user data directory
-############################################ UI Imports ############################################
 import tkinter as tk
 from tkinter import ttk, messagebox
-############################################ RL Imports ############################################
+from appdirs import user_data_dir  # Import for user data directory
 from rl_algorithms.utils import get_available_algorithms  # Import here
 from rl_algorithms.functions import initialize_algorithms, rl_algorithms
-############################################ HMM Imports ############################################
-import pandas as pd
-from hmmlearn import hmm
 
 # Get the user data directory
 user_data_path = user_data_dir("RLNNApp", "UpAllNightSpyke")  # Adjust app_name and author if needed
@@ -94,18 +89,6 @@ class RLModelSelectionWindow:
 
         default_button = ttk.Button(self.window, text="Default Settings", command=self.reset_to_default)
         default_button.grid(row=2, column=1, pady=10, sticky=tk.E)
-        
-############################################ HMM Training ############################################
-        # Add a checkbox for enabling/disabling HMM
-        self.use_hmm_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(self.window, text="Use HMM", variable=self.use_hmm_var).grid(row=1, column=0, columnspan=2, pady=5)
-
-        # Add a button for training the HMM
-        self.train_hmm_button = ttk.Button(self.window, text="Train HMM", command=self.train_hmm, state=tk.DISABLED)
-        self.train_hmm_button.grid(row=2, column=0, columnspan=2, pady=5)
-
-        # Trace the checkbox to enable/disable the button
-        self.use_hmm_var.trace_add("write", self.toggle_train_hmm_button)
 
     def open_algorithm_settings(self):
         from rl_gui.algorithm_settings_gui import AlgorithmSpecificSettingsWindow  
@@ -145,33 +128,6 @@ class RLModelSelectionWindow:
         os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
         with open(SETTINGS_FILE, 'w') as file:
             json.dump(self.algorithm_settings, file, indent=4)
-
-####################### HMM Training Functionality #######################
-    def toggle_train_hmm_button(self, *args):
-        if self.use_hmm_var.get():
-            self.train_hmm_button.config(state=tk.NORMAL)
-        else:
-            self.train_hmm_button.config(state=tk.DISABLED)
-
-    def train_hmm(self):
-        try:
-            # 1. Load the cleaned data
-            data_file = os.path.join(user_data_path, 'forex_data', 'cleaned', 'cleaned_data.csv')  # Adjust the file name if needed
-            data = pd.read_csv(data_file)
-
-            # 2. Select relevant columns for HMM training
-            hmm_data = data[['open', 'high', 'low', 'close', 'tick_volume']].values  # Select relevant columns
-
-            # 3. Create and train the HMM model
-            model = hmm.GaussianHMM(n_components=3, covariance_type="full", n_iter=100)  # Adjust parameters as needed
-            model.fit(hmm_data)
-
-            # 4. Save the trained HMM model (optional)
-            # ...
-
-            messagebox.showinfo("Success", "HMM trained successfully!")
-        except Exception as e:
-            messagebox.showerror("Error", f"An error occurred while training the HMM: {e}")
 
 # Example usage
 def main():

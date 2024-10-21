@@ -1,7 +1,7 @@
 import os
 import json
-from ai_utils.ai_env import TradingEnv
-from ai_utils.normalize_data import normalize_data
+from ai_env import TradingEnv
+from normalize_data import normalize_data
 from rl_algorithms.functions import initialize_algorithms, rl_algorithms
 from appdirs import user_data_dir
 import pandas as pd
