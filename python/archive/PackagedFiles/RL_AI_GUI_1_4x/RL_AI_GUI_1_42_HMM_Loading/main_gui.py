@@ -338,7 +338,7 @@ class ForexApp:
 
     def add_footer(self):
         ttk.Label(self.root, text="© UpAllNightSpyke, 2024").grid(column=0, row=2, columnspan=2, padx=10, pady=5, sticky='w')
-        ttk.Label(self.root, text="Version 1.43a").grid(column=2, row=2, padx=10, pady=5, sticky='e')
+        ttk.Label(self.root, text="Version 1.42a").grid(column=2, row=2, padx=10, pady=5, sticky='e')
 
 if __name__ == "__main__":
     root = tk.Tk()
