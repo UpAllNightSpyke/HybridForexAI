@@ -95,7 +95,11 @@ class RLModelSelectionWindow:
         self.window.title("RL Model Selection")
         self.window.transient(self.parent)
 
-        ttk.Label(self.window, text="Select Algorithm:").grid(
+        # Create a frame for the left side (algorithm selection)
+        left_frame = ttk.Frame(self.window)
+        left_frame.grid(row=0, column=0, padx=10, pady=10, sticky=tk.NS)
+
+        ttk.Label(left_frame, text="Select Algorithm:").grid(
             row=0, column=0, padx=10, pady=5, sticky=tk.W)
         self.algorithm_var = tk.StringVar(
             value=self.algorithm_settings['selected_algorithm'])
@@ -104,45 +108,56 @@ class RLModelSelectionWindow:
         algorithm_names = list(self.algorithms.keys())
 
         self.algorithm_combobox = ttk.Combobox(
-            self.window,
+            left_frame,  # Place the combobox in the left frame
             textvariable=self.algorithm_var,
             values=algorithm_names)
         self.algorithm_combobox.grid(row=0, column=1, padx=10, pady=5, sticky=tk.EW)
 
         self.update_algorithm_dropdown()
 
+        settings_button = ttk.Button(left_frame,  # Place the button in the left frame
+                                    text="Settings",
+                                    command=self.open_algorithm_settings)
+        settings_button.grid(row=1, column=0, pady=10)
+
+        # Create a vertical separator
+        separator = ttk.Separator(self.window, orient='vertical')
+        separator.grid(row=0, column=1, sticky=tk.NS)
+
+        # Create a frame for the right side (HMM)
+        right_frame = ttk.Frame(self.window)
+        right_frame.grid(row=0, column=2, padx=10, pady=10, sticky=tk.NS)
+
         # Add a checkbox for enabling/disabling HMM
         self.use_hmm_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(self.window,
+        ttk.Checkbutton(right_frame,
                         text="Use HMM",
-                        variable=self.use_hmm_var).grid(row=1,
+                        variable=self.use_hmm_var).grid(row=0,
                                                         column=0,
-                                                        columnspan=2,
-                                                        pady=5)
+                                                        sticky=tk.W)
 
-        # Add a button for training the HMM
-        self.train_hmm_button = ttk.Button(self.window,
+        # Add buttons for training and loading HMM
+        self.train_hmm_button = ttk.Button(right_frame,
                                         text="Train HMM",
                                         command=self.train_hmm,
                                         state=tk.DISABLED)
-        self.train_hmm_button.grid(row=2, column=0, pady=5, sticky=tk.W)
+        self.train_hmm_button.grid(row=1, column=0, pady=5, sticky=tk.W)
 
-        # Add a button for loading the HMM
-        self.load_hmm_button = ttk.Button(self.window,
+        self.load_hmm_button = ttk.Button(right_frame,
                                         text="Load HMM",
                                         command=self.load_hmm,
                                         state=tk.DISABLED)
-        self.load_hmm_button.grid(row=3, column=0, pady=5, sticky=tk.W)
+        self.load_hmm_button.grid(row=2, column=0, pady=5, sticky=tk.W)
 
         # Label to display loaded model info
-        self.load_hmm_label = ttk.Label(self.window, text="")  # Initialize here
-        self.load_hmm_label.grid(row=3, column=1, pady=5, sticky=tk.E)
+        self.load_hmm_label = ttk.Label(right_frame, text="")
+        self.load_hmm_label.grid(row=3, column=0, pady=5, sticky=tk.W)
 
         # Add a label to display the loaded model filename
-        self.loaded_model_label = ttk.Label(self.window, text="")
-        self.loaded_model_label.grid(row=4, column=0, columnspan=2, pady=5)
+        self.loaded_model_label = ttk.Label(right_frame, text="")
+        self.loaded_model_label.grid(row=4, column=0, pady=5, sticky=tk.W)
 
-        # Load the last loaded HMM model filename from settings (this if block should be here)
+        # Load the last loaded HMM model filename from settings
         if 'loaded_hmm_model' in self.algorithm_settings:
             loaded_model_filename = self.algorithm_settings['loaded_hmm_model']
             # Update the label with the loaded model filename
@@ -152,14 +167,23 @@ class RLModelSelectionWindow:
         # Trace the checkbox to enable/disable the buttons
         self.use_hmm_var.trace_add("write", self.toggle_train_hmm_button)
 
-        settings_button = ttk.Button(self.window, text="Settings", command=self.open_algorithm_settings)
-        settings_button.grid(row=5, column=0, columnspan=2, pady=10)  # Moved to row 5
+        # Create a horizontal separator
+        separator = ttk.Separator(self.window, orient='horizontal')
+        separator.grid(row=1, column=0, columnspan=3, sticky=tk.EW, pady=10)
 
-        save_button = ttk.Button(self.window, text="Save", command=self.save_model_selection)
-        save_button.grid(row=6, column=0, pady=10, sticky=tk.W)  # Moved to row 6
+        # Create a frame for the footer (save and default buttons)
+        footer_frame = ttk.Frame(self.window)
+        footer_frame.grid(row=2, column=0, columnspan=3, pady=10)
 
-        default_button = ttk.Button(self.window, text="Default Settings", command=self.reset_to_default)
-        default_button.grid(row=6, column=1, pady=10, sticky=tk.E)  # Moved to row 6
+        save_button = ttk.Button(footer_frame,
+                                text="Save",
+                                command=self.save_model_selection)
+        save_button.grid(row=0, column=0, padx=10, sticky=tk.W)
+
+        default_button = ttk.Button(footer_frame,
+                                    text="Default Settings",
+                                    command=self.reset_to_default)
+        default_button.grid(row=0, column=1, padx=10, sticky=tk.E)
 
     def open_algorithm_settings(self):
         from rl_gui.algorithm_settings_gui import AlgorithmSpecificSettingsWindow  

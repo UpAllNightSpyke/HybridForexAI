@@ -4,7 +4,6 @@ from indicator_gui import IndicatorSettingsWindow
 from cryptography.fernet import Fernet
 import json
 import os
-import re
 import sys
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
