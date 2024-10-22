@@ -2,15 +2,13 @@ import os
 import importlib
 import json
 
-#CACHE_FILE = os.path.join(os.path.dirname(__file__), 'algorithm_cache.json') Moved to initialize_algorithms()
+CACHE_FILE = os.path.join(os.path.dirname(__file__), 'algorithm_cache.json')
 
 rl_algorithms = {}  # Initialize as a dictionary
 algorithm_params = {}
 
 def initialize_algorithms():
     global rl_algorithms, algorithm_params
-
-    CACHE_FILE = os.path.join(os.path.dirname(__file__), 'algorithm_cache.json')
 
     if os.path.exists(CACHE_FILE):
         try:
