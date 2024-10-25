@@ -186,14 +186,13 @@ class ForexApp:
 
         return indicator_settings
         
-    def normalize_data(self):
-        normalized_data = normalize_data()
-        if normalized_data is not None:
-            messagebox.showinfo("Success", "Data normalized successfully.")
-            # You can now use the normalized_data DataFrame, e.g., pass it to your AI model
-            # ...
-        else:
-            messagebox.showerror("Error", "Failed to normalize data. Check console for details.")
+    #moved to the train_rl.py file
+    #def normalize_data(self):
+    #    normalized_data = normalize_data()
+    #    if normalized_data is not None:
+    #        messagebox.showinfo("Success", "Data normalized successfully.")
+    #    else:
+    #        messagebox.showerror("Error", "Failed to normalize data. Check console for details.")
 
     def get_all_symbols(self):
         mt5_path = self.account_details.get('MT5 Path', '')
@@ -246,16 +245,13 @@ class ForexApp:
         fetch_button = ttk.Button(button_frame, text="Fetch Data", command=self.fetch_data)
         fetch_button.grid(row=0, column=2, padx=5)
 
-        process_button = ttk.Button(button_frame, text="Process Data", command=self.process_data)
-        process_button.grid(row=0, column=3, padx=5)
-
-        # Add separator
-        separator = ttk.Separator(button_frame, orient='horizontal')
-        separator.grid(row=1, column=0, columnspan=4, pady=10, sticky=tk.EW)
-
-        #Add Normalize Data button
-        normalize_button = ttk.Button(button_frame, text="Normalize Data", command=self.normalize_data)
-        normalize_button.grid(row=2, column=0, pady=10)
+        #moved to the train_rl.py file
+        #process_button = ttk.Button(button_frame, text="Process Data", command=self.process_data)
+        #process_button.grid(row=0, column=3, padx=5)
+        #separator = ttk.Separator(button_frame, orient='horizontal')
+        #separator.grid(row=1, column=0, columnspan=4, pady=10, sticky=tk.EW)
+        #normalize_button = ttk.Button(button_frame, text="Normalize Data", command=self.normalize_data)
+        #normalize_button.grid(row=2, column=0, pady=10)
 
         # Add AI Model Select button
         ai_model_button = ttk.Button(button_frame, text="AI Model Select", command=self.open_algorithm_window)
@@ -274,25 +270,21 @@ class ForexApp:
     def fetch_data(self):
        # self.save_settings()  # Save settings before fetching data
         fetch_data(self.account_details, self.data_fields)
-
-    def process_data(self):
-        try:
-            symbol = self.data_fields['Symbol'].get()
-            timeframe = Timeframe[self.data_fields['Timeframe'].get()].value
-
-            python_executable = sys.executable
-
+    
+    #moved to the train_rl.py file
+    #def process_data(self):
+    #    try:
+    #        symbol = self.data_fields['Symbol'].get()
+    #        timeframe = Timeframe[self.data_fields['Timeframe'].get()].value
+    #        python_executable = sys.executable
             # Get the directory of the currently running script (main_gui.py)
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-
+    #        script_dir = os.path.dirname(os.path.abspath(__file__))
             # Construct the path to preprocess_data.py relative to main_gui.py
-            preprocess_script = os.path.join(script_dir, 'preprocess_data.py')
-
-            subprocess.run([python_executable, preprocess_script, symbol, str(timeframe)])
-
-            messagebox.showinfo("Success", "Data processed and saved successfully.")
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
+    #        preprocess_script = os.path.join(script_dir, 'preprocess_data.py')
+    #        subprocess.run([python_executable, preprocess_script, symbol, str(timeframe)])
+    #        messagebox.showinfo("Success", "Data processed and saved successfully.")
+    #    except Exception as e:
+    #        messagebox.showerror("Error", str(e))
 
     def save_settings(self):
         settings_dir = os.path.join(self.user_data_dir, 'settings')  

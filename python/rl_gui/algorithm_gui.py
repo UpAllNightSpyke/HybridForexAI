@@ -7,11 +7,11 @@ from tkinter import ttk, messagebox, messagebox, filedialog
 ############################################ RL Imports ############################################
 from rl_algorithms.utils import get_available_algorithms  # Import here
 from rl_algorithms.functions import initialize_algorithms, rl_algorithms
-from ai_utils.train_rl import train_rl_model, load_rl_model
+from ai_utils.train_rl import train_rl_model, load_rl_model 
 ############################################ HMM Imports ############################################
 import pandas as pd
 from hmmlearn import hmm
-from ai_utils.train_hmm import train_hmm_model
+from ai_utils.train_hmm import train_hmm_model, load_hmm_model
 
 def get_available_algorithms():
     initialize_algorithms()  # Call initialize_algorithms here
@@ -66,28 +66,14 @@ DEFAULT_SETTINGS = {
 class RLModelSelectionWindow:
     def __init__(self, parent, algorithm_settings):
         self.parent = parent
-
-        # Create self.window here
-        self.window = tk.Toplevel(self.parent)  
+        self.algorithm_settings = self.load_settings()
+        self.window = tk.Toplevel(self.parent)
         self.window.title("RL Model Selection")
         self.window.transient(self.parent)
-
-        self.algorithm_settings = self.load_settings()
         self.algorithm_var = None
 
         self.algorithm_params = initialize_algorithms()
         self.algorithms = get_available_algorithms()
-
-        # The following two lines have been removed
-        # Initialize load_hmm_label here
-        # self.load_hmm_label = ttk.Label(self.window, text="")
-        # self.load_hmm_label.grid(row=3, column=1, pady=5, sticky=tk.E)
-
-        # Load the last loaded HMM model filename from settings
-        #if 'loaded_hmm_model' in self.algorithm_settings:  # Reintroduce the if statement
-        #    loaded_model_filename = self.algorithm_settings['loaded_hmm_model']
-        #    # Update the label with the loaded model filename
-        #    self.load_hmm_label.config(text=f"Loaded: {os.path.basename(loaded_model_filename)}")
 
         self.create_model_selection_window()
 
@@ -240,18 +226,13 @@ class RLModelSelectionWindow:
         with open(SETTINGS_FILE, 'w') as file:
             json.dump(self.algorithm_settings, file, indent=4)
 
-def train_rl(self):
-    algorithm_type = self.algorithm_var.get()  # Get the selected algorithm type
-    train_rl_model(algorithm_type)
+    def train_rl(self):
+        algorithm_type = self.algorithm_var.get()  # Get the selected algorithm type
+        train_rl_model(algorithm_type)
 
-def load_rl(self):
-    algorithm_type = self.algorithm_var.get()  # Get the selected algorithm type
-    model = load_rl_model(algorithm_type)
-    if model:
-        # ... use the loaded RL model ...
-        messagebox.showinfo("Success", f"RL model ({algorithm_type}) loaded successfully!")
-    else:
-        messagebox.showerror("Error", f"Failed to load RL model ({algorithm_type}).")
+    def load_rl(self):
+        algorithm_type = self.algorithm_var.get()  # Get the selected algorithm type
+        load_rl_model(algorithm_type)
 
 ####################### HMM Training Functionality #######################
     def toggle_train_hmm_button(self, *args):
@@ -263,38 +244,10 @@ def load_rl(self):
             self.load_hmm_button.config(state=tk.DISABLED)  # Disable Load HMM button
 
     def train_hmm(self):
-        train_hmm_model()
+        train_hmm_model()  # Call the imported function
 
     def load_hmm(self):
-        # Set the initial directory for the file dialog
-        user_data_path = user_data_dir("RLNNApp", "UpAllNightSpyke")
-        initial_dir = os.path.join(user_data_path, 'HMMmodel')
-
-        # Open a file dialog for the user to select the model file
-        model_filename = filedialog.askopenfilename(
-            initialdir=initial_dir,
-            defaultextension=".pkl",
-            filetypes=[("Pickle Files", "*.pkl"), ("All Files", "*.*")])
-        if not model_filename:
-            return  # User canceled the dialog
-
-        try:
-            import pickle
-            with open(model_filename, 'rb') as file:
-                model = pickle.load(file)
-            # ... use the loaded model in your AI algorithm ...
-
-            # Update the label with the loaded model filename
-            self.loaded_model_label.config(
-                text=f"Loaded model: {os.path.basename(model_filename)}")
-            
-            # Save the loaded model filename to settings
-            self.algorithm_settings['loaded_hmm_model'] = model_filename
-            self.save_to_file()  # Save the updated settings
-
-            messagebox.showinfo("Success", "HMM loaded successfully!")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load HMM model: {e}")
+        load_hmm_model()  # Call the imported function
 
 # Example usage
 def main():

@@ -1,51 +1,81 @@
 import os
-import json
+import pickle
 from appdirs import user_data_dir
 import pandas as pd
 from rl_algorithms.functions import initialize_algorithms, get_available_algorithms
+from sklearn.preprocessing import MinMaxScaler
+from ai_utils.train_hmm import load_hmm_model
+from ai_utils.ai_env import TradingEnv  # Import the TradingEnv class
 
-def find_cleaned_data():
+def find_raw_data():
     """
-    Locates the cleaned data file in the user data directory.
+    Locates the raw data file in the user data directory.
 
     Returns:
-        str: The path to the cleaned data file.
+        str: The path to the raw data file.
 
     Raises:
-        FileNotFoundError: If no cleaned data file is found.
+        FileNotFoundError: If no raw data file is found.
     """
     user_data_path = user_data_dir("RLNNApp", "UpAllNightSpyke")
-    cleaned_data_dir = os.path.join(user_data_path, 'forex_data', 'cleaned')
+    raw_data_dir = os.path.join(user_data_path, 'forex_data', 'raw')
 
-    for filename in os.listdir(cleaned_data_dir):
-        if filename.endswith("_cleaned.csv"):
-            cleaned_data_file = os.path.join(cleaned_data_dir, filename)
-            return cleaned_data_file
+    for filename in os.listdir(raw_data_dir):
+        if filename.endswith(".csv"):
+            raw_data_file = os.path.join(raw_data_dir, filename)
+            return raw_data_file
 
-    raise FileNotFoundError("No cleaned data file found.")
+    raise FileNotFoundError("No raw data file found.")
 
-def train_rl_model(algorithm_type):
+def train_rl_model(algorithm_type, use_hmm=False):
     """
-    Trains the specified RL model using the cleaned data and saves it.
+    Trains the specified RL model using the raw data, preprocesses it, normalizes it, optionally incorporates HMM states and time-based features, and saves it with the algorithm type in the filename.
     """
     try:
-        # 1. Load the cleaned data
-        cleaned_data_file = find_cleaned_data()
-        data = pd.read_csv(cleaned_data_file)
+        # 1. Load the raw data
+        raw_data_file = find_raw_data()
+        data = pd.read_csv(raw_data_file)
 
-        # 2. Select relevant columns for RL training
-        rl_data = data[['open', 'high', 'low', 'close', 'tick_volume']].values  # Select relevant columns
+        # 2. Remove rows with NaN values
+        data.dropna(inplace=True)
 
-        # 3. Initialize the RL environment (you'll need to define this based on your project)
-        env = YourRLEnvironment(rl_data)  # Replace YourRLEnvironment with your actual environment class
+        # 3. Feature engineering for time-based features (using datetime)
+        data['time'] = pd.to_datetime(data['time'])
+        data['hour_of_day'] = data['time'].dt.hour
+        data['day_of_week'] = data['time'].dt.dayofweek
 
-        # 4. Initialize and train the RL model
+        # 4. Normalize the data (including indicator columns)
+        indicator_columns = [col for col in data.columns if col not in ['time', 'hour_of_day', 'day_of_week']]
+        scaler = MinMaxScaler()
+        data[indicator_columns] = scaler.fit_transform(data[indicator_columns])
+
+        # 5. Conditionally incorporate HMM states if use_hmm is True
+        if use_hmm:
+            hmm_model = load_hmm_model()
+            if hmm_model is None:
+                raise ValueError("HMM model not found. Please train or load an HMM model first.")
+
+            # Use only the necessary columns for HMM prediction
+            hmm_data = data[['open', 'high', 'low', 'close', 'tick_volume', 'hour_of_day', 'day_of_week']].values
+            hidden_states = hmm_model.predict(hmm_data)
+            data['hidden_state'] = hidden_states
+
+            # Select all relevant columns for RL training (including hidden states, time features, and indicator data)
+            rl_data = data.drop(columns=['time']).values
+        else:
+            # Select relevant columns for RL training (including time features and indicator data)
+            rl_data = data[['open', 'high', 'low', 'close', 'tick_volume', 'hour_of_day', 'day_of_week'] + indicator_columns].values
+
+        # 6. Initialize the RL environment
+        env = TradingEnv(rl_data)
+
+        # 7. Initialize and train the RL model
         algorithms = initialize_algorithms()
         algorithm = get_available_algorithms()[algorithm_type]
-        model = algorithm(env)  # Instantiate the RL model
+        model = algorithm(env)
         model.learn(total_timesteps=10000)  # Adjust total_timesteps as needed
 
-        # 5. Save the trained RL model
+        # 8. Save the trained RL model
         user_data_path = user_data_dir("RLNNApp", "UpAllNightSpyke")
         model_dir = os.path.join(user_data_path, 'RLmodel')
         os.makedirs(model_dir, exist_ok=True)
@@ -73,6 +103,7 @@ def load_rl_model(algorithm_type):
         model_filename = os.path.join(model_dir, f'rl_model_{algorithm_type}.pkl')
         with open(model_filename, 'rb') as file:
             model = pickle.load(file)
+        print(f"RL model ({algorithm_type}) loaded successfully!")
         return model
     except FileNotFoundError:
         print(f"Trained RL model ({algorithm_type}) not found.")

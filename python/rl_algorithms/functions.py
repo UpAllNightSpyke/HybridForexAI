@@ -7,6 +7,10 @@ import json
 rl_algorithms = {}  # Initialize as a dictionary
 algorithm_params = {}
 
+def get_available_algorithms():
+    initialize_algorithms()
+    return rl_algorithms
+
 def initialize_algorithms():
     global rl_algorithms, algorithm_params
 

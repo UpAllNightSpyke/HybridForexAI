@@ -52,64 +52,46 @@ def get_historical_data(symbol, timeframe, start_date, end_date):
     data['time'] = pd.to_datetime(data['time'], unit='s')
     return data
 
-def calculate_indicators(data, indicators, indicator_settings):
-    indicator_data = data.copy()
-    for indicator_name, settings in indicator_settings.items():
-        if indicator_name in ["Symbol", "Timeframe", "Start Date", "End Date"]:
-            continue  # Skip non-indicator settings
-        print(f"Processing indicator: {indicator_name} with settings: {settings}")
-        if isinstance(settings, dict) and settings.get('is_used'):
-            indicator_func = indicators.get(indicator_name)
-            if indicator_func:
-                try:
-                    # Call the indicator function with the appropriate parameters
-                    print(f"Calculating {indicator_name} using custom function...")
-                    indicator_values = indicator_func(data, settings['symbol'], settings['timeframe'], settings['params'])
-                    indicator_data = pd.concat([indicator_data, indicator_values], axis=1)
-                    print(f"Calculated {indicator_name}: {indicator_values.head()}")
-                except Exception as e:
-                    print(f"Error calculating {indicator_name}: {e}")
-            else:
-                print(f"Indicator function for {indicator_name} not found.")
-        else:
+def calculate_indicators(data, indicator_functions, indicator_settings):
+    """Calculates the selected technical indicators using the provided data and settings."""
+    indicator_data = {}
+
+    for indicator_name in indicator_functions:  # Iterate through available indicators
+        settings = indicator_settings.get(indicator_name)  # Get settings for the current indicator
+        if settings is None or not settings.get('is_used'):
             print(f"Indicator {indicator_name} is not used or settings are invalid.")
-    
-    # Remove rows with NaN values in any of the indicator columns
-    indicator_data.dropna(inplace=True)
-    
+            continue
+
+        try:
+            # Call the corresponding function from the indicator_functions dictionary
+            indicator_func = indicator_functions[indicator_name]
+
+            # Get the parameters from the settings
+            params = settings.get('params', {})
+
+            # Call the indicator function with the parameters
+            result = indicator_func(data, indicator_settings['Symbol'], indicator_settings['Timeframe'], params)
+
+            indicator_data[indicator_name] = result
+            print(f"Calculated {indicator_name}: ", result)  # Print the calculated indicator data
+
+        except Exception as e:
+            print(f"Error processing indicator: {indicator_name} with settings: {settings}")
+            print(f"Error details: {e}")
+
     return indicator_data
 
-def save_data_to_csv(symbol, timeframe, start_date, end_date, data, indicator_data, output_dir=None): 
-    """Saves data to a CSV file.
-
-    Args:
-        symbol (str): The trading symbol.
-        timeframe (str): The timeframe of the data.
-        start_date (datetime): The start date of the data.
-        end_date (datetime): The end date of the data.
-        data (pd.DataFrame): The raw price data.
-        indicator_data (pd.DataFrame): The calculated indicator data.
-        output_dir (str, optional): The directory to save the CSV file. 
-                                      Defaults to 'data/raw' relative to the script's location.
-    """
-    # Get the user data directory
-    user_data_path = user_data_dir("RLNNApp", "UpAllNightSpyke")  # Adjust app_name and author if needed
-
-    # Define the output directory within the user data directory
-    output_dir = os.path.join(user_data_path, 'forex_data', 'raw') 
-
-    # Ensure the output directory exists
-    os.makedirs(output_dir, exist_ok=True)
+def save_data_to_csv(filepath, data, indicator_data):  # Use filepath directly
+    """Saves data to a CSV file with the specified filepath."""
 
     combined_data = data.copy()
     for col in indicator_data.columns:
         combined_data[col] = indicator_data[col]
-    
+
     print(f"Combined DataFrame before saving:\n{combined_data.head()}")
 
-    output_file = os.path.join(output_dir, f"{symbol}_{timeframe}.csv")
-    combined_data.to_csv(output_file, index=False)
-    print(f"Data saved to {output_file}")
+    combined_data.to_csv(filepath, index=False)
+    print(f"Data saved to {filepath}")
     
 def load_indicator_settings():
     # Get the user data directory
@@ -137,7 +119,8 @@ def fetch_data(account_details, data_fields):
         server = account_details['Server']
 
         symbol = data_fields['Symbol'].get()
-        timeframe = Timeframe[data_fields['Timeframe'].get()].value
+        timeframe_str = data_fields['Timeframe'].get()  # Get timeframe as string
+        timeframe = Timeframe[timeframe_str].value  # Convert to enum value
         start_date = datetime.strptime(data_fields['Start Date'].get(), '%Y-%m-%d')
         end_date = datetime.strptime(data_fields['End Date'].get(), '%Y-%m-%d')
 
@@ -148,11 +131,15 @@ def fetch_data(account_details, data_fields):
                 if indicator_settings is None:
                     messagebox.showerror("Error", "Failed to load indicator settings.")
                     return
-                
-                add_symbol_and_timeframe_to_settings(indicator_settings, symbol, timeframe)
-                indicator_data = calculate_indicators(data, indicator_functions, indicator_settings) # Calculate first
 
-                save_data_to_csv(symbol, timeframe, start_date, end_date, data, indicator_data)  # Then save
+                add_symbol_and_timeframe_to_settings(indicator_settings, symbol, timeframe)
+                indicator_data = calculate_indicators(data, indicator_functions, indicator_settings)
+
+                # Construct filename with symbol, timeframe, start date, and end date
+                filename = f"{symbol}_{timeframe}_{start_date.strftime('%Y-%m-%d')}_{end_date.strftime('%Y-%m-%d')}.csv"
+                filepath = os.path.join(user_data_dir, 'forex_data', 'raw', filename)
+
+                save_data_to_csv(filepath, data, indicator_data)  # Use the constructed filepath
 
                 messagebox.showinfo("Success", "Data fetched and saved successfully.")
 
