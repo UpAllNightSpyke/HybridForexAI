@@ -11,10 +11,7 @@ from tkcalendar import DateEntry
 from indicators.indicator_library import Timeframe
 from indicators.functions import indicator_functions, initialize_indicators, get_available_indicators
 import MetaTrader5 as mt5
-from datetime import datetime
-import subprocess
 from appdirs import user_data_dir  # Import for user data directory
-from ai_utils.normalize_data import normalize_data
 
 # Initialize indicators
 initialize_indicators()
@@ -268,8 +265,7 @@ class ForexApp:
         RLModelSelectionWindow(self.root, self.indicator_settings)
 
     def fetch_data(self):
-       # self.save_settings()  # Save settings before fetching data
-        fetch_data(self.account_details, self.data_fields)
+        fetch_data(self.account_details, self.data_fields, self.user_data_dir)
     
     #moved to the train_rl.py file
     #def process_data(self):
