@@ -7,6 +7,7 @@ from tkinter import ttk, messagebox, messagebox, filedialog
 ############################################ RL Imports ############################################
 from rl_algorithms.utils import get_available_algorithms  # Import here
 from rl_algorithms.functions import initialize_algorithms, rl_algorithms
+from ai_utils.train_rl import train_rl_model, load_rl_model
 ############################################ HMM Imports ############################################
 import pandas as pd
 from hmmlearn import hmm
@@ -91,7 +92,6 @@ class RLModelSelectionWindow:
         self.create_model_selection_window()
 
     def create_model_selection_window(self):
-        #self.window = tk.Toplevel(self.parent)
         self.window.title("RL Model Selection")
         self.window.transient(self.parent)
 
@@ -124,7 +124,11 @@ class RLModelSelectionWindow:
         separator = ttk.Separator(self.window, orient='vertical')
         separator.grid(row=0, column=1, sticky=tk.NS)
 
-        # Create a frame for the right side (HMM)
+######################################################################################################
+############################################ HMM Training ############################################
+######################################################################################################
+
+# Create a frame for the right side (HMM)
         right_frame = ttk.Frame(self.window)
         right_frame.grid(row=0, column=2, padx=10, pady=10, sticky=tk.NS)
 
@@ -170,6 +174,18 @@ class RLModelSelectionWindow:
         # Create a horizontal separator
         separator = ttk.Separator(self.window, orient='horizontal')
         separator.grid(row=1, column=0, columnspan=3, sticky=tk.EW, pady=10)
+
+        # Add a button for training the RL model
+        self.train_rl_button = ttk.Button(left_frame,  # Add to the left frame
+                                          text="Train RL Model",
+                                          command=self.train_rl)
+        self.train_rl_button.grid(row=2, column=0, pady=5)
+
+        # Add a button for loading the RL model
+        self.load_rl_button = ttk.Button(left_frame,  # Add to the left frame
+                                          text="Load RL Model",
+                                          command=self.load_rl)
+        self.load_rl_button.grid(row=3, column=0, pady=5)
 
         # Create a frame for the footer (save and default buttons)
         footer_frame = ttk.Frame(self.window)
@@ -223,6 +239,19 @@ class RLModelSelectionWindow:
         os.makedirs(os.path.dirname(SETTINGS_FILE), exist_ok=True)
         with open(SETTINGS_FILE, 'w') as file:
             json.dump(self.algorithm_settings, file, indent=4)
+
+def train_rl(self):
+    algorithm_type = self.algorithm_var.get()  # Get the selected algorithm type
+    train_rl_model(algorithm_type)
+
+def load_rl(self):
+    algorithm_type = self.algorithm_var.get()  # Get the selected algorithm type
+    model = load_rl_model(algorithm_type)
+    if model:
+        # ... use the loaded RL model ...
+        messagebox.showinfo("Success", f"RL model ({algorithm_type}) loaded successfully!")
+    else:
+        messagebox.showerror("Error", f"Failed to load RL model ({algorithm_type}).")
 
 ####################### HMM Training Functionality #######################
     def toggle_train_hmm_button(self, *args):
