@@ -72,10 +72,12 @@ class RLModelSelectionWindow:
         self.window.transient(self.parent)
         self.algorithm_var = None
 
+        # Create the GUI elements first
+        self.create_model_selection_window()
+
+        # Then initialize the algorithms and parameters
         self.algorithm_params = initialize_algorithms()
         self.algorithms = get_available_algorithms()
-
-        self.create_model_selection_window()
 
     def create_model_selection_window(self):
         self.window.title("RL Model Selection")

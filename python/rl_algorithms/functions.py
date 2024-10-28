@@ -19,6 +19,9 @@ def initialize_algorithms():
     # Define the cache file path within the user data directory
     CACHE_FILE = os.path.join(user_data_path, 'algorithm_cache.xml')
 
+    # Add print statement to check rl_algorithms after loading from cache
+    print("rl_algorithms after loading from cache:", rl_algorithms)
+
     if os.path.exists(CACHE_FILE):
         try:
             # Load algorithms and parameters from XML cache
@@ -29,9 +32,14 @@ def initialize_algorithms():
             for alg_element in root.findall("algorithm"):
                 alg_name = alg_element.get("name")
                 module_path = alg_element.find("module_path").text
-                module = importlib.import_module(module_path)
-                func_name = f"train_{alg_name.lower()}"
-                rl_algorithms[alg_name] = getattr(module, func_name)
+
+                # Import the module and function dynamically
+                try:
+                    module = importlib.import_module(module_path.rsplit('.', 1)[0])  # Import the module
+                    func = getattr(module, module_path.rsplit('.', 1)[1])  # Get the function from the module
+                    rl_algorithms[alg_name] = func
+                except Exception as e:
+                    print(f"Error importing {module_path}: {e}")
 
             algorithm_params = {}
             for param_element in root.find("parameters").findall("param"):
@@ -41,7 +49,6 @@ def initialize_algorithms():
                     algorithm_params[alg_name][p.get("name")] = p.text
 
             print("Loaded algorithms and parameters from cache.")
-            print("Available algorithms:", rl_algorithms.keys())  # Print available algorithms
             return algorithm_params
 
         except Exception as e:
@@ -52,20 +59,15 @@ def initialize_algorithms():
     print("Starting algorithm initialization...")
 
     for category in ['value_based', 'policy_based', 'model_based']:
-        category_path = os.path.join(current_dir, category)
-        if not os.path.exists(category_path):
-            print(f"Category path does not exist: {category_path}")
-            continue
-
         print(f"Searching category: {category}")
-        for filename in os.listdir(category_path):
+        for filename in os.listdir(os.path.join(current_dir, category)):
             if filename.endswith('.py') and filename != '__init__.py':
                 module_name = filename[:-3]
                 print(f"Found module: {module_name}.py")
 
                 try:
                     module = importlib.import_module(
-                        f'rl_algorithms.{category}.{module_name}')
+                        f'.{category}.{module_name}', package='rl_algorithms')
                     print(f"Imported module: {category}.{module_name}")
 
                     for attr_name in dir(module):
@@ -103,7 +105,7 @@ def initialize_algorithms():
     algorithms_element = etree.SubElement(root, "algorithms")
     for alg_name, func in rl_algorithms.items():
         alg_element = etree.SubElement(algorithms_element, "algorithm", name=alg_name)
-        etree.SubElement(alg_element, "module_path").text = func.__module__
+        etree.SubElement(alg_element, "module_path").text = func.__module__ + '.' + func.__name__
 
     params_element = etree.SubElement(root, "parameters")
     for alg_name, params in algorithm_params.items():
@@ -116,5 +118,4 @@ def initialize_algorithms():
     tree.write(CACHE_FILE, pretty_print=True)
 
     print("Cached algorithms and parameters.")
-    print("Available algorithms:", rl_algorithms.keys())  # Print available algorithms
     return algorithm_params
