@@ -1,7 +1,7 @@
 import os
 import pickle
-from appdirs import user_data_dir
 import pandas as pd
+from appdirs import user_data_dir
 from rl_algorithms.functions import initialize_algorithms, get_available_algorithms
 from sklearn.preprocessing import MinMaxScaler
 from ai_utils.train_hmm import load_hmm_model
@@ -9,10 +9,10 @@ from ai_utils.ai_env import TradingEnv  # Import the TradingEnv class
 
 def find_raw_data():
     """
-    Locates the raw data file in the user data directory.
+    Locates the raw data file in the user data directory and extracts symbol and timeframe from the filename.
 
     Returns:
-        str: The path to the raw data file.
+        str: The path to the raw data file, symbol, and timeframe.
 
     Raises:
         FileNotFoundError: If no raw data file is found.
@@ -23,17 +23,20 @@ def find_raw_data():
     for filename in os.listdir(raw_data_dir):
         if filename.endswith(".csv"):
             raw_data_file = os.path.join(raw_data_dir, filename)
-            return raw_data_file
+            
+            # Extract symbol and timeframe from filename
+            try:
+                symbol, timeframe, _, _ = filename[:-4].split('_')
+                return raw_data_file, symbol, timeframe
+            except ValueError:
+                continue
 
     raise FileNotFoundError("No raw data file found.")
 
 def train_rl_model(algorithm_type, use_hmm=False):
-    """
-    Trains the specified RL model using the raw data, preprocesses it, normalizes it, optionally incorporates HMM states and time-based features, and saves it with the algorithm type in the filename.
-    """
     try:
         # 1. Load the raw data
-        raw_data_file = find_raw_data()
+        raw_data_file, symbol, timeframe = find_raw_data()  # Get symbol and timeframe
         data = pd.read_csv(raw_data_file)
 
         # 2. Remove rows with NaN values
@@ -59,7 +62,6 @@ def train_rl_model(algorithm_type, use_hmm=False):
             hmm_data = data[['open', 'high', 'low', 'close', 'tick_volume', 'hour_of_day', 'day_of_week']].values
             hidden_states = hmm_model.predict(hmm_data)
             data['hidden_state'] = hidden_states
-
             # Select all relevant columns for RL training (including hidden states, time features, and indicator data)
             rl_data = data.drop(columns=['time']).values
         else:
@@ -67,7 +69,7 @@ def train_rl_model(algorithm_type, use_hmm=False):
             rl_data = data[['open', 'high', 'low', 'close', 'tick_volume', 'hour_of_day', 'day_of_week'] + indicator_columns].values
 
         # 6. Initialize the RL environment
-        env = TradingEnv(rl_data)
+        env = TradingEnv(rl_data, symbol, timeframe)  # Pass symbol and timeframe to TradingEnv
 
         # 7. Initialize and train the RL model
         algorithms = initialize_algorithms()
