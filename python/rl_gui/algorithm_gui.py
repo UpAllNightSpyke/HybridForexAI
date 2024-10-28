@@ -91,7 +91,9 @@ class RLModelSelectionWindow:
             value=self.algorithm_settings['selected_algorithm'])
 
         # Initialize algorithm_names here, AFTER initialize_algorithms and get_available_algorithms
-        algorithm_names = list(self.algorithms.keys())
+        self.algorithm_params = initialize_algorithms()  # Assign the returned dictionary
+        self.algorithms = get_available_algorithms()  # No need to pass rl_algorithms here
+        algorithm_names = list(self.algorithms.keys())  # Get the algorithm names here
 
         self.algorithm_combobox = ttk.Combobox(
             left_frame,  # Place the combobox in the left frame
