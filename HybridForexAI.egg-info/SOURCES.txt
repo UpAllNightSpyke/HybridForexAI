@@ -1,7 +1,0 @@
-README.md
-setup.py
-HybridForexAI.egg-info/PKG-INFO
-HybridForexAI.egg-info/SOURCES.txt
-HybridForexAI.egg-info/dependency_links.txt
-HybridForexAI.egg-info/requires.txt
-HybridForexAI.egg-info/top_level.txt
