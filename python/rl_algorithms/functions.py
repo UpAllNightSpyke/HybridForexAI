@@ -31,12 +31,13 @@ def initialize_algorithms():
             rl_algorithms = {}
             for alg_element in root.findall("algorithm"):
                 alg_name = alg_element.get("name")
+                category = alg_element.get("category")  # Get the category attribute
                 module_path = alg_element.find("module_path").text
 
                 # Import the module and function dynamically
                 try:
-                    module = importlib.import_module(module_path.rsplit('.', 1)[0])  # Import the module
-                    func = getattr(module, module_path.rsplit('.', 1)[1])  # Get the function from the module
+                    module = importlib.import_module(f"rl_algorithms.{category}.{alg_name.lower()}")  # Use the category to construct the module path
+                    func = getattr(module, f"train_{alg_name.lower()}")
                     rl_algorithms[alg_name] = func
                 except Exception as e:
                     print(f"Error importing {module_path}: {e}")

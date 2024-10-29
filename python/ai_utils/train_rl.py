@@ -77,8 +77,10 @@ def train_rl_model(algorithm_type, use_hmm=False):
         env = TradingEnv(rl_data, symbol, timeframe)  # Pass symbol and timeframe to TradingEnv
 
         # 7. Initialize and train the RL model
-        algorithm_params = initialize_algorithms()  # Get algorithm_params
+        algorithm_params = initialize_algorithms()
         available_algorithms = get_available_algorithms()  # Get the available algorithms
+        print("available_algorithms in train_rl:", available_algorithms)  # Debug print
+
 
         # Check if the algorithm_type is valid
         if algorithm_type not in available_algorithms:
