@@ -182,14 +182,6 @@ class ForexApp:
                         indicator_settings[indicator]['params'][param] = value
 
         return indicator_settings
-        
-    #moved to the train_rl.py file
-    #def normalize_data(self):
-    #    normalized_data = normalize_data()
-    #    if normalized_data is not None:
-    #        messagebox.showinfo("Success", "Data normalized successfully.")
-    #    else:
-    #        messagebox.showerror("Error", "Failed to normalize data. Check console for details.")
 
     def get_all_symbols(self):
         mt5_path = self.account_details.get('MT5 Path', '')
@@ -267,21 +259,6 @@ class ForexApp:
     def fetch_data(self):
         fetch_data(self.account_details, self.data_fields, self.user_data_dir)
     
-    #moved to the train_rl.py file
-    #def process_data(self):
-    #    try:
-    #        symbol = self.data_fields['Symbol'].get()
-    #        timeframe = Timeframe[self.data_fields['Timeframe'].get()].value
-    #        python_executable = sys.executable
-            # Get the directory of the currently running script (main_gui.py)
-    #        script_dir = os.path.dirname(os.path.abspath(__file__))
-            # Construct the path to preprocess_data.py relative to main_gui.py
-    #        preprocess_script = os.path.join(script_dir, 'preprocess_data.py')
-    #        subprocess.run([python_executable, preprocess_script, symbol, str(timeframe)])
-    #        messagebox.showinfo("Success", "Data processed and saved successfully.")
-    #    except Exception as e:
-    #        messagebox.showerror("Error", str(e))
-
     def save_settings(self):
         settings_dir = os.path.join(self.user_data_dir, 'settings')  
         indicator_file = os.path.join(settings_dir, 'indicator_settings.json')

@@ -76,8 +76,9 @@ class RLModelSelectionWindow:
         self.create_model_selection_window()
 
         # Then initialize the algorithms and parameters
-        self.algorithm_params = initialize_algorithms()
         self.algorithms = get_available_algorithms()
+        self.algorithm_params = initialize_algorithms()
+
 
     def create_model_selection_window(self):
         self.window.title("RL Model Selection")
